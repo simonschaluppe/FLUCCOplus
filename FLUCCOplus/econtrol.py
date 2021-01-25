@@ -1,8 +1,7 @@
 #%%
 import pandas as pd
-import matplotlib.pyplot as plt
 
-from utils import logg
+from FLUCCOplus.config import *
 
 pp_carriers = [
     'Laufkraftwerke',
@@ -14,17 +13,20 @@ pp_carriers = [
     'Geothermie',
     'StatistischeDifferenz',
     'PhysikalischeImporte']
-pp_cats = [
 
+pp_cats = [
     'Wasserkraft',
     'Wärmekraftwerke',
     'WindkraftwerkePhotovoltaikGeothermie']
+
 pp_sum = ['Bruttoerzeugung']
-pc_sum = [
-    'AufbringungVerwendung']
+
+pc_sum = ['AufbringungVerwendung']
+
 pc_cats = [
     'Inlandstromverbrauch',
     'Inlandstromverbrauch3']
+
 pc_uses = [
     'Endverbrauch1',
     'VerbrauchfürPumpspeicher',
@@ -33,6 +35,8 @@ pc_uses = [
     'PhysikalischeExporte']
 
 EC_COLUMNS = pp_carriers + pp_cats + pp_sum + pc_sum + pc_cats + pc_uses
+
+
 
 @logg
 def start_pipeline(df):

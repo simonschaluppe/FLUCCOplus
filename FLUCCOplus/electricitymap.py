@@ -1,10 +1,9 @@
+
 import pandas as pd
-from utils import logg, PJ_TO_GWH
-import pandas as pd
-from  collections import OrderedDict
+from collections import OrderedDict
 
 
-
+from FLUCCOplus.config import *
 
 
 EM_TO_EXCEL_colnames = {
@@ -22,6 +21,13 @@ EXCEL_TO_EM_colnames["Pumpspeicher"] = "power_consumption_hydro_discharge_avg"
 EXCEL_TO_EM_colnames["Wasserkraft"] = "power_production_hydro_and_discharge_avg"
 
 #%%
+@log
+def read_electricity_map():
+    df = pd.read_csv("../data/electricityMap/Electricity_map_2015-2019.csv",
+                     delimiter=';',
+                     parse_dates=["datetime"],
+                     index_col="datetime")
+    return df
 
 @logg
 def start_pipeline(df):

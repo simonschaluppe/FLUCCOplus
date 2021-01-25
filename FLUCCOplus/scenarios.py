@@ -1,5 +1,5 @@
 
-from utils import logg, PJ_TO_GWH
+from FLUCCOplus.config import *
 
 
 @logg

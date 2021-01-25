@@ -7,8 +7,8 @@ E_CONTROL_XLSX = "../data/e-control/BStGes-JR1_Bilanz.xlsx"
 ec_raw = pd.read_excel(E_CONTROL_XLSX, sheet_name="FLUCCOplus", skiprows=[1], index_col=0)
 
 #%%
-import econtrol as ec
-import plots as pl
+from FLUCCOplus import econtrol as ec
+
 ec_clean = (ec_raw
             .pipe(ec.start_pipeline)
             .pipe(ec.clean_colnames)
