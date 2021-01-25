@@ -1,5 +1,8 @@
 import datetime as dt
 
+PJ_TO_GWH = 277.7778 # [GWh / PJ]
+GWH_TO_PJ = 1/PJ_TO_GWH #[PJ/GWH]
+
 def logg(f):
     def wrapper(dataframe, *args, **kwargs):
         tic = dt.datetime.now()
