@@ -3,7 +3,54 @@ import pandas as pd
 from collections import OrderedDict
 
 
+
 from FLUCCOplus.config import *
+
+headers = ['Source', 'Series_name', 'Jahr',
+    'monat', 'woche', 'Tag', 'Stunde',
+    'Datum', 'Tag des Jahres', 'Tag des Monats',
+    'Stunde des jahres',
+    'Uhrzeit', 'timestamp', 'zone_name',]
+
+carbon = ['carbon_intensity_avg',
+    'carbon_intensity_production_avg',
+    'carbon_intensity_discharge_avg',
+    'carbon_intensity_import_avg',
+    'carbon_rate_avg']
+
+EM_RAW_COLS = headers + \
+              carbon + \
+              [
+    'total_production_avg',
+    'total_storage_avg',
+    'total_discharge_avg',
+    'total_import_avg',
+    'total_export_avg',
+    'total_consumption_avg',
+
+    'power_production_biomass_avg',
+    'power_production_coal_avg',
+    'power_production_gas_avg',
+    'power_production_hydro_avg',
+    'power_production_nuclear_avg',
+    'power_production_oil_avg',
+    'power_production_solar_avg',
+    'power_production_wind_avg',
+    'power_production_geothermal_avg',
+    'power_production_unknown_avg',
+
+    'power_origin_percent_biomass_avg',
+    'power_origin_percent_coal_avg',
+    'power_origin_percent_gas_avg',
+    'power_origin_percent_hydro_avg',
+    'power_origin_percent_nuclear_avg',
+    'power_origin_percent_oil_avg',
+    'power_origin_percent_solar_avg',
+    'power_origin_percent_wind_avg',
+    'power_origin_percent_geothermal_avg',
+    'power_origin_percent_unknown_avg',
+    'power_origin_percent_hydro_discharge_avg'
+              ]
 
 
 EM_TO_EXCEL_colnames = {
@@ -34,9 +81,21 @@ def start_pipeline(df):
     return df.copy()
 
 @logg
-def rename_EM_df(df):
+def rename_cols_to_common(df):
     df = df.rename(columns=EM_TO_EXCEL_colnames)
     return df
+
+
+@log
+def split_into_years(df):
+    """separate dataframe in dict(year: df[year]"""
+    years = df.index.year.unique().values
+    # print(f"{len(years)} Jahre: ", years)
+    # #%%
+    # for i, year in enumerate(years):
+    df_dict = {year: df_slice for year, df_slice in zip(years, [df[df.index.year == y] for y in years])}
+    return df_dict
+
 
 @logg
 def calc_aggregates(df):

@@ -4,7 +4,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+
 from FLUCCOplus.utils import logg, PJ_TO_GWH, GWH_TO_PJ, log
 
-data_dir_raw = Path("../data")
+data_dir = Path("../data")
 
