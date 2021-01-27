@@ -278,12 +278,26 @@ def scale_to_scenario(df, factors):
 
 
 
-@logg
+@log
 def preprocess():
+    em18 = (read_raw("Electricity_map_CO2_AT_2018_2019.csv")
+            .pipe(start_pipeline)
+            .drop(header_junk, axis=1)
+            .astype(float)
+            )
 
+    em15 = (read_raw("Electricity_map_CO2_AT_2015_2017.csv")
+            .pipe(start_pipeline)
+            .pipe(clean151617)
+            .pipe(calc_power_consumption_from_percent)
+            )
 
+    em18set = set(em18.columns)
+    em15set = set(em15.columns)
+    common_cols = sorted(list(em15set & em18set))
 
-
+    em = pd.concat([em15[common_cols], em18[common_cols]])
+    return em
 
 
 @logg

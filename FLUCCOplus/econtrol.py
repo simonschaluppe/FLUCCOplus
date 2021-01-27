@@ -13,20 +13,17 @@ pp_carriers = [
     'Geothermie',
     'StatistischeDifferenz',
     'PhysikalischeImporte']
-
 pp_cats = [
     'Wasserkraft',
     'Wärmekraftwerke',
     'WindkraftwerkePhotovoltaikGeothermie']
-
-pp_sum = ['Bruttoerzeugung']
-
-pc_sum = ['AufbringungVerwendung']
-
+pp_sum = [
+    'Bruttoerzeugung']
+pc_sum = [
+    'AufbringungVerwendung']
 pc_cats = [
     'Inlandstromverbrauch',
     'Inlandstromverbrauch3']
-
 pc_uses = [
     'Endverbrauch1',
     'VerbrauchfürPumpspeicher',
