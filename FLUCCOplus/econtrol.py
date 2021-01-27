@@ -44,7 +44,10 @@ def start_pipeline(df):
 
 @logg
 def parse_econtrol(path):
-    df = pd.read_excel(path, sheet_name="FLUCCOplus",skiprows=[1],index_col=0)
+    df = pd.read_excel(path,
+                       sheet_name="FLUCCOplus",
+                       skiprows=[1],
+                       index_col=0)
     return df
 
 @logg

@@ -3,7 +3,7 @@
 
 from FLUCCOplus.config import *
 
-web_data_path = data_dir / Path("web/WEB-Lastgaenge_03032020_15min_kWh.csv")
+web_data_path = DIR_DATA_RAW / Path("web/WEB-Lastgaenge_03032020_15min_kWh.csv")
 
 
 @log
