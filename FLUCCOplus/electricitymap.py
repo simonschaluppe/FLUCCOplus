@@ -276,15 +276,18 @@ def scale_to_scenario(df, factors):
     return scens
 
 
-
-
 @log
-def preprocess():
-    em18 = (read_raw("Electricity_map_CO2_AT_2018_2019.csv")
+def fetch_1819():
+    return (read_raw("Electricity_map_CO2_AT_2018_2019.csv")
             .pipe(start_pipeline)
             .drop(header_junk, axis=1)
             .astype(float)
             )
+
+@log
+def preprocess():
+
+    em18 = fetch_1819()
 
     em15 = (read_raw("Electricity_map_CO2_AT_2015_2017.csv")
             .pipe(start_pipeline)

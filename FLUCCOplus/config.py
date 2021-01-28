@@ -18,7 +18,6 @@ DATA_INTERIM = Path("../data/interim")
 DATA_PROCESSED = Path("../data/processed")
 
 
-
 VERBOSE = True
 
 
