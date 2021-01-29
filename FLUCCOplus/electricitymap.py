@@ -196,6 +196,7 @@ def read_raw(file):
 def start_pipeline(df):
     return df.copy()
 
+@logg
 def clean151617(df):
     """returns a clean em df 15-17"""
     return (df

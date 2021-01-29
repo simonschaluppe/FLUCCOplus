@@ -1,7 +1,7 @@
 from FLUCCOplus.config import *
 
 import matplotlib.pyplot as plt
-plt.style.use('fivethirtyeight')
+# plt.style.use('fivethirtyeight')
 
 import seaborn as sns
 

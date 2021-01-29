@@ -18,8 +18,10 @@ def logg(f):
         tic = dt.datetime.now()
         result = f(dataframe, *args, **kwargs)
         toc = dt.datetime.now()
-        print(f"{f.__name__} took {toc-tic} for {result.shape} df")
+        ro, co = result.shape
+        print(f"{f.__name__} took {toc-tic} for {ro} rows, {co} columns in df")
         # print(result.info())
         return result
     return wrapper
+
 
