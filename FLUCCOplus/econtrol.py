@@ -1,7 +1,5 @@
-#%%
-import pandas as pd
 
-from FLUCCOplus.config import *
+from FLUCCOplus.utils import *
 
 pp_carriers = [
     'Laufkraftwerke',
@@ -41,11 +39,11 @@ def start_pipeline(df):
 
 @logg
 def parse_econtrol(path):
-    df = pd.read_excel(path,
+    return pd.read_excel(path,
                        sheet_name="FLUCCOplus",
                        skiprows=[1],
                        index_col=0)
-    return df
+
 
 @logg
 def clean_colnames(df):
@@ -55,7 +53,6 @@ def clean_colnames(df):
 
 @logg
 def plot_stacked(df):
-    import matplotlib.pyplot as plt
     df.plot.bar(stacked=True)
     plt.show()
     return df
@@ -64,6 +61,3 @@ def plot_stacked(df):
 def production(df):
     return df
 
-
-if __name__ == "__main__":
-    pass

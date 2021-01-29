@@ -1,10 +1,9 @@
 from FLUCCOplus.config import *
 
-import matplotlib.pyplot as plt
+
 # plt.style.use('fivethirtyeight')
 
-import seaborn as sns
-
+sns.set(style="whitegrid", context="notebook")
 
 
 

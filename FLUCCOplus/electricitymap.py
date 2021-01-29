@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from FLUCCOplus.config import *
+from FLUCCOplus.utils import *
 
 header_junk = ['production_sources', 'Jahr', 'monat', 'Tag', 'Stunde', 'Datum', 'Tag des Jahres',
                'Tag des Monats', 'Uhrzeit', 'timestamp', 'zone_name']
@@ -184,6 +184,7 @@ def parse_electricity_map():
 @log
 def read_raw(file):
     """reads a raw electricity map .csv and returns the df"""
+    from FLUCCOplus.config import DATA_RAW
     df = pd.read_csv(DATA_RAW / "electricityMap" / file,
                      delimiter=";",
                      parse_dates=["datetime"],

@@ -1,8 +1,25 @@
+
+
+# imports shared throughout the project
+import sys
+import importlib
+
 import datetime as dt
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+from pathlib import Path
+
+
+# CONSTANTS
 
 PJ_TO_GWH = 277.7778 # [GWh / PJ]
 GWH_TO_PJ = 1/PJ_TO_GWH #[PJ/GWH]
 
+
+# HELPER
 
 def log(f):
     def wrapper(*args, **kwargs):
@@ -12,6 +29,7 @@ def log(f):
         print(f"{f.__name__} took {toc-tic}")
         return result
     return wrapper
+
 
 def logg(f):
     def wrapper(dataframe, *args, **kwargs):

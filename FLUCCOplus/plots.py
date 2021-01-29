@@ -1,4 +1,4 @@
-from FLUCCOplus.utils import logg
+from FLUCCOplus.utils import *
 from FLUCCOplus.notebooks import *
 
 from matplotlib.figure import Figure
@@ -10,8 +10,6 @@ class Variable:
     ylabel:str
     agg:object
     ylabel_agg:str
-
-
 
 
 
