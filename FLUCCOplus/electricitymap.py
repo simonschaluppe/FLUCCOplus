@@ -155,31 +155,6 @@ carrier_colors = {
     "battery_discharge": "orange",
     "hydro_discharge": "blue"}
 
-EM_TO_EXCEL_colnames = {
-    "power_production_wind_avg": "Windkraft",
-    "power_production_solar_avg": "Photovoltaik",
-    "power_production_hydro_avg": "Laufkraft",
-    "total_consumption_avg": "Strombedarf",
-    "total_production_avg": "Stromproduktion",
-    "power_consumption_hydro_discharge_avg": "Pumpspeicher"}
-
-EXCEL_TO_EM_colnames = {v: k for k, v in EM_TO_EXCEL_colnames.items()}
-EXCEL_TO_EM_colnames["Volatile EE"] = "power_production_volatile_avg"
-EXCEL_TO_EM_colnames["Nicht-Volatile"] = "power_production_non-volatile_avg"
-EXCEL_TO_EM_colnames["Pumpspeicher"] = "power_consumption_hydro_discharge_avg"
-EXCEL_TO_EM_colnames["Wasserkraft"] = "power_production_hydro_and_discharge_avg"
-
-
-# %%
-@log
-def parse_electricity_map():
-    df = pd.read_csv("../data/raw/electricityMap/Electricity_map_2015-2019.csv",
-                     delimiter=';',
-                     parse_dates=["datetime"],
-                     index_col="datetime",
-                     )
-    return df
-
 
 @log
 def read_raw(file):
@@ -190,7 +165,6 @@ def read_raw(file):
                      parse_dates=["datetime"],
                      index_col="datetime")
     return df
-
 
 
 @logg
@@ -210,12 +184,10 @@ def clean151617(df):
             .astype(float)
             )
 
-
 @logg
 def rename_cols_to_common(df):
     df = df.rename(columns=EM_TO_EXCEL_colnames)
     return df
-
 
 
 @log
@@ -321,20 +293,3 @@ def save_to_csv(df_dict: dict, scenario_folder="data/scenarios/"):
         print(name, " saved!")
 
 
-@logg
-def get_scenario(scenario_name, col_dict, Excel_to_EM_dict):
-    """gets the preprocessed scenario including residual loads"""
-    df_scenario = pd.DataFrame()
-
-    for col in Excel_to_EM_dict.keys():
-        # %%
-        c = col_dict[col]
-        df_scenario[col] = c[scenario_name]
-
-    df_scenario["RES0 (Bedarf-PV,Wind,Laufkraft)"] = df_scenario["Strombedarf"] - df_scenario["Volatile EE"]
-    df_scenario["RES1 (RES0-Pumpspeicher)"] = df_scenario["RES0 (Bedarf-PV,Wind,Laufkraft)"] - df_scenario[
-        "Pumpspeicher"]
-    df_scenario["RES2 (RES1-Nicht-Volatile)"] = df_scenario["RES1 (RES0-Pumpspeicher)"] - df_scenario["Nicht-Volatile"]
-
-    # df_sc["RES0"][scenario_name] = df_scenario["RES0"]
-    return df_scenario

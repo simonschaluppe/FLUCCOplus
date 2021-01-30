@@ -24,3 +24,7 @@ def test_plot_stacked():
 def test_production():
     # return df
     pass
+
+
+#test pandas
+# pd.testing.assert_frame_equal(actual, expected)
