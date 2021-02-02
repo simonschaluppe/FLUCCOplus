@@ -1,13 +1,19 @@
 
 # imports
 
-
-from FLUCCOplus.utils import *
-
+from pathlib import Path
 
 # Configuration Parameters
 
 VERBOSE = True
+
+import logging
+logging.basicConfig(
+    filename  = 'app.log',      # Log output file
+    level     = logging.INFO,   # Output level
+)
+
+
 
 DATA_RAW = Path("../data/raw")
 DATA_EXTERNAL = Path("../data/external")

@@ -1,4 +1,5 @@
 
+import FLUCCOplus.config as config
 from FLUCCOplus.utils import *
 
 pp_carriers = [
