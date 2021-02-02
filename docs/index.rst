@@ -35,8 +35,7 @@ Look how easy it is to use:
 Features
 --------
 
-- Be awesome
-- Make things faster
+er- Make things faster
 
 Installation
 ------------
