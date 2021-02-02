@@ -1,6 +1,8 @@
 from collections import OrderedDict
 
 from FLUCCOplus.utils import *
+import FLUCCOplus.config as config
+
 
 header_junk = ['production_sources', 'Jahr', 'monat', 'Tag', 'Stunde', 'Datum', 'Tag des Jahres',
                'Tag des Monats', 'Uhrzeit', 'timestamp', 'zone_name']
@@ -158,13 +160,13 @@ carrier_colors = {
 
 @log
 def read_raw(file):
-    """reads a raw electricity map .csv and returns the df"""
-    from FLUCCOplus.config import DATA_RAW
-    df = pd.read_csv(DATA_RAW / "electricityMap" / file,
+    """
+    reads a raw electricity map .csv and returns the df
+    """
+    return pd.read_csv(config.DATA_RAW / "electricityMap" / file,
                      delimiter=";",
                      parse_dates=["datetime"],
                      index_col="datetime")
-    return df
 
 
 @logg
@@ -175,7 +177,6 @@ def start_pipeline(df):
 def clean151617(df):
     """returns a clean em df 15-17"""
     return (df
-            .pipe(start_pipeline)
             .drop("local_datetime", axis=1)
             .drop
             (
@@ -184,10 +185,6 @@ def clean151617(df):
             .astype(float)
             )
 
-@logg
-def rename_cols_to_common(df):
-    df = df.rename(columns=EM_TO_EXCEL_colnames)
-    return df
 
 
 @log
@@ -211,6 +208,7 @@ def as_df(dict: dict):
     df = pd.concat(dict.values())
     return df
 
+@logg
 def calc_power_consumption_from_percent(df):
     cols = carriers +["hydro_discharge"]
     for c in cols: #keine discharge (battery, hydro)
@@ -228,26 +226,6 @@ def calc_aggregates(df):
     df["Volatile EE"] = df["Laufkraft"] + df["Windkraft"] + df["Photovoltaik"]
     df["Nicht-Volatile"] = df["Stromproduktion"] - df["Wasserkraft"] - df["Windkraft"] - df["Photovoltaik"]
     return df
-
-
-@logg
-def scale_to_scenario(df, factors):
-    """takes a EM dataframe and scaling factors and returns a dict with keys [scenario]:  vals [scaled dataframes]"""
-    scens = OrderedDict()
-    columns = sorted(list(EXCEL_TO_EM_colnames.keys()))
-    for i, sc in enumerate(factors.index):
-        scens[sc] = df[columns].copy()
-        for col in columns:
-            f = factors[col][i]
-            year = factors["EM"][i]
-            scens[sc].loc[scens[sc].index.year == year, col] = df.loc[df.index.year == year, col] * f
-
-        scens[sc]["RES0 (Bedarf-PV,Wind,Laufkraft)"] = scens[sc]["Strombedarf"] - scens[sc]["Volatile EE"]
-        scens[sc]["RES1 (RES0-Pumpspeicher)"] = scens[sc]["RES0 (Bedarf-PV,Wind,Laufkraft)"] - scens[sc][
-            "Pumpspeicher"]
-        scens[sc]["RES2 (RES1-Nicht-Volatile)"] = scens[sc]["RES1 (RES0-Pumpspeicher)"] - scens[sc][
-            "Nicht-Volatile"]
-    return scens
 
 
 @log
@@ -291,5 +269,3 @@ def save_to_csv(df_dict: dict, scenario_folder="data/scenarios/"):
                   encoding="cp850")
 
         print(name, " saved!")
-
-

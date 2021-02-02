@@ -1,5 +1,7 @@
 
+import FLUCCOplus.config as config
 from FLUCCOplus.utils import *
+
 
 EM_TO_EXCEL_colnames = {
     "power_production_wind_avg": "Windkraft",
@@ -26,6 +28,12 @@ def read(path):
 @logg
 def start_pipeline(df):
     return df.copy()
+
+@logg
+def rename_cols_to_common(df):
+    df = df.rename(columns=EM_TO_EXCEL_colnames)
+    return df
+
 
 
 @logg
