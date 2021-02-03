@@ -9,8 +9,8 @@ VERBOSE = True
 
 import logging
 logging.basicConfig(
-    filename  = 'app.log',      # Log output file
-    level     = logging.INFO,   # Output level
+    # filename  = 'app.log',      # Log output file
+    level     = logging.DEBUG,   # Output level
 )
 
 
@@ -23,7 +23,7 @@ DATA_PROCESSED = Path("../data/processed")
 SAVE_CSV_FORMAT = {
     "sep": ";",
     "decimal": ",",
-    "encoding": "cp850"
+    "encoding": "cp850" #so windows excel gets it
 }
 
 

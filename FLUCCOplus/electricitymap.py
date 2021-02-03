@@ -1,4 +1,3 @@
-from collections import OrderedDict
 
 from FLUCCOplus.utils import *
 import FLUCCOplus.config as config
@@ -117,26 +116,27 @@ discharge = ["battery_discharge",
 carriers = renewables + fossile
 sources = renewables + fossile + discharge
 
-
 def col(prefix, vars):
-    """what i want: give carrier list with prefix"""
+    """what i want: give variable (carrier) list with prefix"""
     # return valid col list
     if type(vars) is str:
         return ''.join([prefix, "_", vars, "_avg"])
     else:
         return [''.join([prefix, "_", var, "_avg"]) for var in vars]
 
+pp = "power_production"
+pps_RE = col(pp, renewables)
+pps_NRE = col(pp, fossile)  # no discharge
 
-pps_RE = col("power_production", renewables)
-pps_NRE = col("power_production", fossile)  # no discharge
+pc = "power_consumption"
+pcs_RE = col(pc, renewables)
+pcs_NRE = col(pc, fossile)
+pcs_discharge = col(pc, discharge)
 
-pcs_RE = col("power_consumption", renewables)
-pcs_NRE = col("power_consumption", fossile)
-pcs_discharge = col("power_consumption", discharge)
-
-cops_RE = col("carbon_origin_percent", renewables)
-cops_NRE = col("carbon_origin_percent", fossile)
-cops_discharge = col("carbon_origin_percent", discharge)
+cop = "carbon_origin_percent"
+cops_RE = col(cop, renewables)
+cops_NRE = col(cop, fossile)
+cops_discharge = col(cop, discharge)
 
 pps = pps_RE + pps_NRE
 pcs_sources = pcs_RE + pcs_NRE
@@ -269,3 +269,5 @@ def save_to_csv(df_dict: dict, scenario_folder="data/scenarios/"):
                   encoding="cp850")
 
         print(name, " saved!")
+
+

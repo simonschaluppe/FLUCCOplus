@@ -36,11 +36,9 @@ def logg(f):
     logger = config.logging.getLogger(f.__module__)
 
     def wrapper(dataframe, *args, **kwargs):
-
         result = log(f)(dataframe, *args, **kwargs)
         ro, co = result.shape
         logger.debug(f"{f.__name__} df.shape = ({ro}, {co})")
-
         return result
     return wrapper
 
