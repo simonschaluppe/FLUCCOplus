@@ -2,13 +2,18 @@
 
 from sklearn import preprocessing
 
-from FLUCCOplus.config import *
+from FLUCCOplus.utils import *
 
 from matplotlib.figure import Figure
 
-@log
-def transform(support_points:list, hour_scale:int=8760): #output dimension is always 8760 hours
-    """returns the trigonometric polynomial fitting a given set of support points"""
+
+def transform(support_points:list, hour_scale:int=8760):
+    """
+    returns the trigonometric polynomial fitting
+    a given set of support points
+
+    output dimension is always 8760 hours
+    """
 
     h = hour_scale #hours of periodic timeframe
     points = np.array(support_points)
@@ -16,8 +21,9 @@ def transform(support_points:list, hour_scale:int=8760): #output dimension is al
     x = np.arange(0, h, h/N, dtype=np.float64) #position of support points
     y = points  # support points of the scaler
 
+
     sum = np.fft.rfft(y) # calculate trigonometric polynomial of given support points (discrete fourier transform (dft))
-    added_zeros = np.zeros(int((h-N)/2))
+    added_zeros = np.zeros(int((h-N)/2)) #fill the higher frequency fourier coefficients
     padded_sum = np.concatenate([sum, added_zeros])
 
     scaler = np.fft.irfft(padded_sum) * h / N #for given hour timescale
@@ -25,7 +31,7 @@ def transform(support_points:list, hour_scale:int=8760): #output dimension is al
 
     return np.concatenate([scaler] * reps)[:8760] # copies the signal reps times and returns only the full year
 
-@log
+
 def plot(scaler, support_points, hour_scale=8760, view_scale=1.5):
     p, h = support_points, hour_scale
 
