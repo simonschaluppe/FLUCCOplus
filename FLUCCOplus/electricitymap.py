@@ -168,6 +168,16 @@ def read_raw(file):
                      parse_dates=["datetime"],
                      index_col="datetime")
 
+@log
+def read_interim(file, encoding="cp850"):
+    return pd.read_csv(config.DATA_INTERIM / file,
+                       delimiter=";",
+                       parse_dates=["datetime"],
+                       index_col="datetime",
+                       decimal=",",
+                       encoding=encoding
+                       )
+
 
 @logg
 def start_pipeline(df):
@@ -238,7 +248,6 @@ def fetch_1819():
 
 @log
 def preprocess():
-
     em18 = fetch_1819()
 
     em15 = (read_raw("Electricity_map_CO2_AT_2015_2017.csv")
@@ -253,6 +262,10 @@ def preprocess():
 
     em = pd.concat([em15[common_cols], em18[common_cols]])
     return em
+
+@logg
+def drop_suffixes(df):
+    return df
 
 
 @logg
