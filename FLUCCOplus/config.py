@@ -10,7 +10,7 @@ VERBOSE = True
 import logging
 logging.basicConfig(
     # filename  = 'app.log',      # Log output file
-    level     = logging.DEBUG,   # Output level
+    level     = logging.WARNING,   # Output level
 )
 
 
@@ -26,6 +26,15 @@ SAVE_CSV_FORMAT = {
     "encoding": "cp850" #so windows excel gets it
 }
 
+DPI = 220 # image quality
+
+COLORS = {
+    'Laufkraft': "blue",
+    'Windkraft': "cyan",
+    'Photovoltaik': "orange",
+    'Pumpspeicher': "lightblue",
+    'Nicht-Volatile': "darkgrey"
+}
 
 # Debuggung
 
