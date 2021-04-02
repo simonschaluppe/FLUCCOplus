@@ -71,3 +71,43 @@ def get_scenario(scenario_name, col_dict, Excel_to_EM_dict):
 
     # df_sc["RES0"][scenario_name] = df_scenario["RES0"]
     return df_scenario
+
+
+@log
+def all():
+    sc = (read("szenarien_w2s.xlsx")
+          .pipe(start_pipeline)
+          .pipe(NaNtoZero)
+          .pipe(format_df)
+          .pipe(convert_PJ_to_GWH)
+          )
+    return sc
+
+
+@log
+def factors(source, target, scenarios):
+    """
+
+    :param source: String or Index int of source scenario
+    :param target: String or Index int of target scenario
+    :param scenarios: Dataframe with Scenarios, must include all EM_TO_EXCEL_colnames
+    :return: dict with factors for all EM_TO_EXCEL_colnames
+    """
+    if type(source) == int:
+        src = scenarios.index[source]
+    else: src = source
+
+    if type(target) == int:
+        tgt = scenarios.index[target]
+    else: tgt = target
+
+    carriers = EM_TO_EXCEL_colnames.values()
+    f = scenarios.loc[tgt, carriers] / scenarios.loc[src, carriers]
+    factors = {"source": src, "target": tgt}
+    factors.update({i: j for i, j in zip(carriers, f)})
+
+    return factors
+
+
+class Scenario:
+    name:str
