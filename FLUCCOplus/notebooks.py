@@ -7,7 +7,7 @@ from FLUCCOplus.config import *
 sns.set_style("whitegrid")
 
 sns.set_context("paper",
-                font_scale=1.5,
+                font_scale=1.,
                 rc={"lines.linewidth": 0.7})
 
 from matplotlib import rcParams
