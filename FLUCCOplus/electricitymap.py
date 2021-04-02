@@ -190,7 +190,9 @@ def clean151617(df):
             .drop("local_datetime", axis=1)
             .drop
             (
-                'datetime,local_datetime,total_production_avg,total_consumption_avg,total_import_avg,total_export_avg,carbon_intensity_avg,power_origin_percent_biomass_avg,power_origin_percent_coal_avg,power_origin_percent_gas_avg,power_origin_percent_hydro_avg,power_origin_percent_nuclear_avg,power_origin_percent_oil_avg,power_origin_percent_solar_avg,power_origin_percent_wind_avg,power_origin_percent_geothermal_avg,power_origin_percent_unknown_avg,'
+                'datetime,local_datetime,total_production_avg,total_consumption_avg,'
+                'total_import_avg,total_export_avg,'
+                'carbon_intensity_avg,power_origin_percent_biomass_avg,power_origin_percent_coal_avg,power_origin_percent_gas_avg,power_origin_percent_hydro_avg,power_origin_percent_nuclear_avg,power_origin_percent_oil_avg,power_origin_percent_solar_avg,power_origin_percent_wind_avg,power_origin_percent_geothermal_avg,power_origin_percent_unknown_avg,'
                 'power_origin_percent_hydro_discharge_avg', axis=1)
             .astype(float)
             )
@@ -240,6 +242,10 @@ def calc_aggregates(df):
 
 @log
 def fetch_1819():
+    """
+    returns the cleaned elmap dataset from 2018 and 2019:
+    :return:
+    """
     return (read_raw("Electricity_map_CO2_AT_2018_2019.csv")
             .pipe(start_pipeline)
             .drop(header_junk, axis=1)
@@ -247,14 +253,25 @@ def fetch_1819():
             )
 
 @log
-def preprocess():
-    em18 = fetch_1819()
-
-    em15 = (read_raw("Electricity_map_CO2_AT_2015_2017.csv")
+def fetch_151617():
+    """
+    returns the cleaned elmap dataset from 2015-2017: but there is alot of dropping
+    :return:
+    """
+    return (read_raw("Electricity_map_CO2_AT_2015_2017.csv")
             .pipe(start_pipeline)
             .pipe(clean151617)
             .pipe(calc_power_consumption_from_percent)
             )
+
+@log
+def preprocess():
+    """
+    returns a df with all columns common to elmap1819 and elmap15-17
+    """
+    em18 = fetch_1819()
+
+    em15 = fetch_151617()
 
     em18set = set(em18.columns)
     em15set = set(em15.columns)
@@ -265,6 +282,7 @@ def preprocess():
 
 @logg
 def drop_suffixes(df):
+    print("not implemented yet")
     return df
 
 
@@ -284,3 +302,15 @@ def save_to_csv(df_dict: dict, scenario_folder="data/scenarios/"):
         print(name, " saved!")
 
 
+def get(year, column, set_name=None):
+    """returns a given column of a given year as a series, optionally renamed"""
+    if year in [2015,2016,2017]:
+        df = fetch_151617()
+    elif year in [2018, 2019]:
+        df = fetch_1819()
+    else:
+        raise ValueError(f"Year must be in [2015-2019] as int, got {year}")
+    series = df[df.index.year == year][column]
+    if set_name:
+        series.rename(set_name, inplace=True)
+    return series
