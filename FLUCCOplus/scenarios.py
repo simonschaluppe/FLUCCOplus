@@ -3,20 +3,6 @@ import FLUCCOplus.config as config
 from FLUCCOplus.utils import *
 
 
-EM_TO_EXCEL_colnames = {
-    "power_production_wind_avg": "Windkraft",
-    "power_production_solar_avg": "Photovoltaik",
-    "power_production_hydro_avg": "Laufkraft",
-    "total_consumption_avg": "Strombedarf",
-    "total_production_avg": "Stromproduktion",
-    "power_consumption_hydro_discharge_avg": "Pumpspeicher"}
-
-EXCEL_TO_EM_colnames = {v: k for k, v in EM_TO_EXCEL_colnames.items()}
-EXCEL_TO_EM_colnames["Volatile EE"] = "power_production_volatile_avg"
-EXCEL_TO_EM_colnames["Nicht-Volatile"] = "power_production_non-volatile_avg"
-EXCEL_TO_EM_colnames["Pumpspeicher"] = "power_consumption_hydro_discharge_avg"
-EXCEL_TO_EM_colnames["Wasserkraft"] = "power_production_hydro_and_discharge_avg"
-
 
 @log
 def read(path):

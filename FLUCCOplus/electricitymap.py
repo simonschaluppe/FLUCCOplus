@@ -116,13 +116,13 @@ discharge = ["battery_discharge",
 carriers = renewables + fossile
 sources = renewables + fossile + discharge
 
-def col(prefix, vars):
+def col(prefix, vars, suffix="_avg"):
     """what i want: give variable (carrier) list with prefix"""
     # return valid col list
     if type(vars) is str:
-        return ''.join([prefix, "_", vars, "_avg"])
+        return ''.join([prefix, "_", vars, suffix])
     else:
-        return [''.join([prefix, "_", var, "_avg"]) for var in vars]
+        return [''.join([prefix, "_", var, suffix]) for var in vars]
 
 pp = "power_production"
 pps_RE = col(pp, renewables)
@@ -280,6 +280,11 @@ def preprocess():
     em = pd.concat([em15[common_cols], em18[common_cols]])
     return em
 
+
+@log
+def fetch_common():
+    return read_interim("em_common_15-19.csv")
+
 @logg
 def drop_suffixes(df):
     print("not implemented yet")
@@ -314,3 +319,46 @@ def get(year, column, set_name=None):
     if set_name:
         series.rename(set_name, inplace=True)
     return series
+
+
+
+def plot_PE_factors():
+    pd.DataFrame(PE_factors_OIB2019) \
+        .drop(["fPE"]) \
+        .transpose() \
+        .plot(kind="bar", color=["grey", "lightgreen"], stacked=True)
+
+
+def primary_energy(df, type="fPE"):
+    """
+    returns the primary energy by multiplying a df with _sources_
+    with the utils.PE_factors_OIB2019
+
+    Conversion factors are taken from the OIB RL 6 (2019).
+
+    *Hydro, Solar and Wind* were assumed with $f_{PE,n.ern.} = 0$ and $f_{PE,ern.} = 1.$
+
+    *Nuclear, Unknown and Battery_Discharge* were assumed with the *Electricity Mix* of $f_{PE,n.ern.} = 0.28$ and $f_{PE,ern.} = 1.32$
+    """
+    for src in sources:
+        df[src] = df[src] * PE_factors_OIB2019[src][type]
+    df["total_consumption_avg"] = df.sum(axis=1)
+    return df
+
+def pe_factors(df = fetch_common()):
+    """returns"""
+    df.rename(columns={a: b for a, b in zip(pcs, sources)}, inplace=True)
+    pc = "total_consumption_avg"
+    PE = primary_energy(df[sources], "fPE")
+    fPE = PE[pc] / df[pc]
+    # %%
+    PEnern = primary_energy(df[sources], "fPE,n.ern.")
+    fPEnern = PEnern[pc] / df[pc]
+    # %%
+    PEern = primary_energy(df[sources], "fPE,ern.")
+    fPEern = PEern[pc] / df[pc]
+    return pd.DataFrame({"fPE":fPE,
+                         "fPE,n.ern.":fPEnern,
+                         "fPE,ern.":fPEern}
+                        )
+
