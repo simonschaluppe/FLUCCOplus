@@ -82,9 +82,9 @@ PE_factors_OIB2019 = {
          "fPE,n.ern.":  0.28,
          "fPE,ern.":    1.32},
     'hydro_discharge':
-        {"fPE":         1.0,
-         "fPE,n.ern.":  0,
-         "fPE,ern.":    1.0},
+        {"fPE":         1.63,
+         "fPE,n.ern.":  0.28,
+         "fPE,ern.":    1.32},
 }
 
 
