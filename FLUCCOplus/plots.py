@@ -52,6 +52,9 @@ def emissionyear(rs, oib_co2, fig, ax, var="carbon_intensity_avg",year=2015):
     # em yearly
     co2_mean_em = rs.loc[rs.index.year==year, var].mean()
     pd.Series([co2_mean_em for m in rs.index.month], rs.index.isocalendar().week).plot(ax=ax, color="black", linewidth = 3)
+    # em all years average
+    pd.Series([234.42 for m in rs.index.month], rs.index.isocalendar().week).plot(ax=ax, color="black",
+                                                                                       linewidth=2)
     # oib 18 monthly
     oib18 = pd.Series([oib_co2.loc[m-1] for m in rs.index.month], rs.index.isocalendar().week)
     oib18[3:-3].plot(color="red", linewidth=2, ax=ax) #indexin weirdness (3:-3)
@@ -71,7 +74,7 @@ def plot_OIBCO2_comparison(rs, oib, years=[2015,2016,2017,2018,2019]):
         ax[i].set_xlabel(str(y), size=12)
 
     ax[0].set_ylabel('CO$_2$-Intensität [g/kWh$_e$$_l$]')
-    ax[0].legend(["Measurement data (EM)", "annual average (EM)", "OIB Rl6 Monthly (2018)","OIB RL6 2019"], loc='lower left', fontsize=12)
+    ax[0].legend(["Measurement data (EM)", "annual average (EM)", "2015-2018 average (EM)","OIB Rl6 Monthly (2018)","OIB RL6 2019"], loc='lower left', fontsize=12)
     fig.tight_layout()
     return fig
 

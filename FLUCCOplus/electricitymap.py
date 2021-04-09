@@ -320,6 +320,17 @@ def get(year, column, set_name=None):
         series.rename(set_name, inplace=True)
     return series
 
+def annual_emissions():
+    """returns a series of electricity map co2 averages based on the resampled dataframe"""
+    df = read_interim("em_common_15-19.csv")
+
+    avg = pd.Series([df.loc[df.index.year == y, "carbon_intensity_avg"].mean() for y in df.index.year.unique()], index=[df.index.year.unique()])
+    avg.index = avg.index.map(str)
+
+    avg["2015-2018"] = df.loc[df.index.year!=2019, "carbon_intensity_avg"].mean()
+    avg["2015-2019"] = df[ "carbon_intensity_avg"].mean()
+    avg["OIB 2019 (Entso-E 2014-2018)"] = 227
+    return avg
 
 
 def plot_PE_factors():
