@@ -33,7 +33,8 @@ COLORS = {
     'Windkraft': "cyan",
     'Photovoltaik': "orange",
     'Pumpspeicher': "lightblue",
-    'Nicht-Volatile': "darkgrey"
+    'Nicht-Volatile': "darkgrey",
+    "Strombedarf": "black"
 }
 
 # Debuggung

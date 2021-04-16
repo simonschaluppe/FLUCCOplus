@@ -59,8 +59,12 @@ def get_scenario(scenario_name, col_dict, Excel_to_EM_dict):
     return df_scenario
 
 
-@log
+
 def all():
+    """
+    Returns all W2S Scenarios in [GWh/a]
+    :return:
+    """
     sc = (read("szenarien_w2s.xlsx")
           .pipe(start_pipeline)
           .pipe(NaNtoZero)
@@ -96,4 +100,69 @@ def factors(source, target, scenarios):
 
 
 class Scenario:
-    name:str
+
+
+    def __init__(self, name, scenario, em_base=None):
+        self.name = name
+        scenarios = all()
+        self.annuals = scenarios[scenarios.index==name].transpose().rename(columns={self.name: "target"})
+
+        self.scalable = ["Strombedarf","Pumpspeicher", "Laufkraft", "Windkraft", "Photovoltaik"]
+        self.excel_em_prods =  {EXCEL_TO_EM_colnames[k]:k for k in self.scalable}
+        self.excel_em_cons = {k.replace("production", "consumption"):v for k,v in self.excel_em_prods.items()}
+
+        self.base_df = pd.DataFrame()
+        self.base_year = None
+        self.load_base(em_base)
+
+        self.TSD = pd.DataFrame()
+        self._scale_base_to_target()
+
+
+    def load_base(self, em_base):
+        """
+        loads an electricity map year as .em_base
+        :param em_base: a year of electricity map data as dict with {year, df}
+        :return:
+        """
+        self.base_df = em_base["df"]
+        self.base_year = em_base["year"]
+        self.annuals["base"] = em_base["df"][self.em_excel.keys()].rename(columns={k: v for k, v in zip(self.em_excel, self.scalable)}).sum() / 1000
+        self.annuals.loc["Jahr", "base"] = self.base_year
+        self._calc_scale()
+
+    def _calc_scale(self):
+        for scale in self.scalable:
+            self.annuals.loc[scale, "scale"] = self.annuals.loc[scale,"target"] / self.annuals.loc[scale,"base"]
+
+    def _scale_base_to_target(self):
+        for scale in self.scalable:
+            f = self.annuals.loc[scale, "scale"]
+            self.TSD[scale] = f * self.base_df[self.excel_em[scale]]
+
+    @property
+    def em_excel(self):
+        if self.base_year >= 2018:
+            return self.excel_em_prods
+        elif 2015 <= self.base_year <= 2017:
+            return self.excel_em_cons
+
+    @property
+    def excel_em(self):
+        return {v: k for k,v in self.em_excel.items()}
+
+    def plot(self):
+        self.TSD.plot(color=config.COLORS)
+
+    def __repr__(self):
+        repr = ""
+        repr += self.name + "\n" * 2
+        repr += str(self.annuals)
+        return repr
+
+    def __str__(self):
+        return self.repr()
+
+    def scaling_targets(self):
+        pass
+

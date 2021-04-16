@@ -264,6 +264,8 @@ def fetch_151617():
             .pipe(calc_power_consumption_from_percent)
             )
 
+
+
 @log
 def preprocess():
     """
@@ -284,6 +286,21 @@ def preprocess():
 @log
 def fetch_common():
     return read_interim("em_common_15-19.csv")
+
+@log
+def fetch(year=None, common=False):
+    if year:
+        if year >= 2018:
+            df = fetch_1819()
+        elif 2015 <= year <= 2017:
+            df = fetch_151617()
+        return df[df.index.year == year]
+
+    elif common:
+        return fetch_common()
+
+    else:
+        raise AttributeError("Need to specify a parameter: year or common=True!")
 
 @logg
 def drop_suffixes(df):
@@ -330,6 +347,7 @@ def annual_emissions():
     avg["2015-2018"] = df.loc[df.index.year!=2019, "carbon_intensity_avg"].mean()
     avg["2015-2019"] = df[ "carbon_intensity_avg"].mean()
     avg["OIB 2019 (Entso-E 2014-2018)"] = 227
+
     return avg
 
 
