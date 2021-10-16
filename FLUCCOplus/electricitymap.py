@@ -1,6 +1,7 @@
 
 from FLUCCOplus.utils import *
 import FLUCCOplus.config as config
+import FLUCCOplus.conversion_factors as factors
 
 
 header_junk = ['production_sources', 'Jahr', 'monat', 'Tag', 'Stunde', 'Datum', 'Tag des Jahres',
@@ -98,23 +99,23 @@ power_net_discharge = ['power_net_discharge_battery_avg', 'power_net_discharge_h
 # aggregate
 vars = totals + carbon_intensities
 
-renewables = ["biomass",
+RENEWABLES = ["biomass",
               "hydro",
               "solar",
               "wind",
               "geothermal"]
 
-fossile = ["coal",
+FOSSILE = ["coal",
            "gas",
            "nuclear",
            "oil",
            "unknown"]
 
-discharge = ["battery_discharge",
+DISCHARGE = ["battery_discharge",
              "hydro_discharge"]
 
-carriers = renewables + fossile
-sources = renewables + fossile + discharge
+CARRIERS = RENEWABLES + FOSSILE
+SOURCES = RENEWABLES + FOSSILE + DISCHARGE
 
 def col(prefix, vars, suffix="_avg"):
     """what i want: give variable (carrier) list with prefix"""
@@ -125,18 +126,18 @@ def col(prefix, vars, suffix="_avg"):
         return [''.join([prefix, "_", var, suffix]) for var in vars]
 
 pp = "power_production"
-pps_RE = col(pp, renewables)
-pps_NRE = col(pp, fossile)  # no discharge
+pps_RE = col(pp, RENEWABLES)
+pps_NRE = col(pp, FOSSILE)  # no discharge
 
 pc = "power_consumption"
-pcs_RE = col(pc, renewables)
-pcs_NRE = col(pc, fossile)
-pcs_discharge = col(pc, discharge)
+pcs_RE = col(pc, RENEWABLES)
+pcs_NRE = col(pc, FOSSILE)
+pcs_discharge = col(pc, DISCHARGE)
 
 cop = "carbon_origin_percent"
-cops_RE = col(cop, renewables)
-cops_NRE = col(cop, fossile)
-cops_discharge = col(cop, discharge)
+cops_RE = col(cop, RENEWABLES)
+cops_NRE = col(cop, FOSSILE)
+cops_discharge = col(cop, DISCHARGE)
 
 pps = pps_RE + pps_NRE
 pcs_sources = pcs_RE + pcs_NRE
@@ -156,6 +157,7 @@ carrier_colors = {
     "unknown": "gray",
     "battery_discharge": "orange",
     "hydro_discharge": "blue"}
+
 
 
 @log
@@ -222,7 +224,7 @@ def as_df(dict: dict):
 
 @logg
 def calc_power_consumption_from_percent(df):
-    cols = carriers +["hydro_discharge"]
+    cols = CARRIERS + ["hydro_discharge"]
     for c in cols: #keine discharge (battery, hydro)
         # tc = df["total_consumption_avg"].sum()
         pc = col("power_consumption", c)
@@ -352,42 +354,51 @@ def annual_emissions():
 
 
 def plot_PE_factors():
-    pd.DataFrame(PE_factors_OIB2019) \
+    pd.DataFrame(factors.PE_factors_OIB2019) \
         .drop(["fPE"]) \
         .transpose() \
         .plot(kind="bar", color=["grey", "lightgreen"], stacked=True)
 
 
-def primary_energy(df, type="fPE"):
+def primary_energy(df, type="Primärenergiefaktor total [MJ-eq]"):
     """
-    returns the primary energy by multiplying a df with _sources_
-    with the utils.PE_factors_OIB2019
 
-    Conversion factors are taken from the OIB RL 6 (2019).
-
-    *Hydro, Solar and Wind* were assumed with $f_{PE,n.ern.} = 0$ and $f_{PE,ern.} = 1.$
-
-    *Nuclear, Unknown and Battery_Discharge* were assumed with the *Electricity Mix* of $f_{PE,n.ern.} = 0.28$ and $f_{PE,ern.} = 1.32$
+    :parameter
+    :paramter type: default CONVERSION_FACTORS has  "Primärenergiefaktor total [MJ-eq]"
+                    'Primärenergiefaktor fossil [MJ-eq]'
+                    'Primärenergiefaktor nuklear  [MJ-eq]'
+                    'Primärenergiefaktor total erneuerbar [MJ-eq]'
+                    'Primärenergiefaktor Abwärme / Abfall [MJ-eq]'
+                    'CO2-Äquivalente  [kg CO2-eq]'
+                    'Kohlendioxid, fossil [kg CO2-eq]'
+                    "Umweltbelastungspunkte [UBP'13]"
     """
-    for src in sources:
-        df[src] = df[src] * PE_factors_OIB2019[src][type]
+    for src in SOURCES:
+        src_mapping = factors.conversion_mapping[src]
+        if src not in df.columns:
+            raise KeyError(f"{src=} not in {df.columns=}, \nneeds conversion to  ")
+        df[src] = df[src] * factors.CONVERSION_FACTORS[src_mapping][type]
     df["total_consumption_avg"] = df.sum(axis=1)
     return df
 
-def pe_factors(df = fetch_common()):
+def pe_factors():
     """returns"""
-    df.rename(columns={a: b for a, b in zip(pcs, sources)}, inplace=True)
+    df = fetch_common().rename(columns={a: b for a, b in zip(pcs, SOURCES)})
     pc = "total_consumption_avg"
-    PE = primary_energy(df[sources], "fPE")
+    PE = primary_energy(df[SOURCES], type="Primärenergiefaktor total [MJ-eq]")
     fPE = PE[pc] / df[pc]
-    # %%
-    PEnern = primary_energy(df[sources], "fPE,n.ern.")
+
+    PEnern = primary_energy(df[SOURCES], type="Primärenergiefaktor fossil [MJ-eq]")
     fPEnern = PEnern[pc] / df[pc]
-    # %%
-    PEern = primary_energy(df[sources], "fPE,ern.")
+
+    PEern = primary_energy(df[SOURCES], type="Primärenergiefaktor total erneuerbar [MJ-eq]")
     fPEern = PEern[pc] / df[pc]
     return pd.DataFrame({"fPE":fPE,
                          "fPE,n.ern.":fPEnern,
                          "fPE,ern.":fPEern}
                         )
+
+if __name__ == "__main__":
+    pe = pe_factors()
+
 
