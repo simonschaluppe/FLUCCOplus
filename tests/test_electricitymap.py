@@ -2,7 +2,7 @@ import pytest
 import FLUCCOplus.electricitymap as elmap
 from FLUCCOplus.utils import *
 
-@pytest.mark.parametrize("var", elmap.carriers)
+@pytest.mark.parametrize("var", elmap.CARRIERS)
 @pytest.mark.parametrize("prefix, result", [
                          ("power_production", elmap.production)])
 def test_cols(prefix, var, result):
@@ -12,8 +12,8 @@ def test_col():
     assert elmap.col("power_production", "gas") == "power_production_gas_avg"
 
 def test_pps():
-    assert elmap.pps_RE == elmap.col("power_production", elmap.renewables)
-    assert elmap.pps_NRE == elmap.col("power_production", elmap.fossile)  # no discharge
+    assert elmap.pps_RE == elmap.col("power_production", elmap.RENEWABLES)
+    assert elmap.pps_NRE == elmap.col("power_production", elmap.FOSSILE)  # no discharge
 
 
 @pytest.fixture(scope="session")
