@@ -159,26 +159,33 @@ carrier_colors = {
     "hydro_discharge": "blue"}
 
 
+def _read_raw(from_path):
+    return pd.read_csv(from_path,
+                       delimiter=";",
+                       parse_dates=["datetime"],
+                       index_col="datetime")
 
 @log
 def read_raw(file):
     """
-    reads a raw electricity map .csv and returns the df
+    reads a raw electricity map .csv from the data/raw/electricitymap folder
+    :returns: df
     """
-    return pd.read_csv(config.DATA_RAW / "electricityMap" / file,
-                     delimiter=";",
-                     parse_dates=["datetime"],
-                     index_col="datetime")
+    return _read_raw(config.DATA_RAW / "electricityMap" / file)
 
-@log
-def read_interim(file, encoding="cp850"):
-    return pd.read_csv(config.DATA_INTERIM / file,
+
+def _read_interim(from_path):
+    return pd.read_csv(from_path,
                        delimiter=";",
                        parse_dates=["datetime"],
                        index_col="datetime",
                        decimal=",",
-                       encoding=encoding
+                       encoding="cp850"
                        )
+
+@log
+def read_interim(file, encoding="cp850"):
+    return _read_interim(config.DATA_INTERIM / file)
 
 
 @logg
@@ -248,7 +255,7 @@ def fetch_1819():
     returns the cleaned elmap dataset from 2018 and 2019:
     :return:
     """
-    return (read_raw("Electricity_map_CO2_AT_2018_2019.csv")
+    return (_read_raw("../data/raw/electricityMap/Electricity_map_CO2_AT_2018_2019.csv")
             .pipe(start_pipeline)
             .drop(header_junk, axis=1)
             .astype(float)
@@ -260,7 +267,7 @@ def fetch_151617():
     returns the cleaned elmap dataset from 2015-2017: but there is alot of dropping
     :return:
     """
-    return (read_raw("Electricity_map_CO2_AT_2015_2017.csv")
+    return (_read_raw("../data/raw/electricityMap/Electricity_map_CO2_AT_2015_2017.csv")
             .pipe(start_pipeline)
             .pipe(clean151617)
             .pipe(calc_power_consumption_from_percent)
@@ -287,7 +294,7 @@ def preprocess():
 
 @log
 def fetch_common():
-    return read_interim("em_common_15-19.csv")
+    return _read_interim("../data/interim/em_common_15-19.csv")
 
 @log
 def fetch(year=None, common=False):
@@ -353,7 +360,7 @@ def annual_emissions():
     return avg
 
 
-def plot_PE_factors():
+def plot_PE_factors_OIB():
     pd.DataFrame(factors.PE_factors_OIB2019) \
         .drop(["fPE"]) \
         .transpose() \
@@ -381,24 +388,45 @@ def primary_energy(df, type="Primärenergiefaktor total [MJ-eq]"):
     df["total_consumption_avg"] = df.sum(axis=1)
     return df
 
-def pe_factors():
+def pe_factors(df, totals="total_consumption_avg"):
     """returns"""
     df = fetch_common().rename(columns={a: b for a, b in zip(pcs, SOURCES)})
-    pc = "total_consumption_avg"
     PE = primary_energy(df[SOURCES], type="Primärenergiefaktor total [MJ-eq]")
-    fPE = PE[pc] / df[pc]
+    fPE = PE[totals] / df[totals]
 
     PEnern = primary_energy(df[SOURCES], type="Primärenergiefaktor fossil [MJ-eq]")
-    fPEnern = PEnern[pc] / df[pc]
+    fPEnern = PEnern[totals] / df[totals]
 
     PEern = primary_energy(df[SOURCES], type="Primärenergiefaktor total erneuerbar [MJ-eq]")
-    fPEern = PEern[pc] / df[pc]
+    fPEern = PEern[totals] / df[totals]
+
+    PEnukl = primary_energy(df[SOURCES], type="Primärenergiefaktor nuklear  [MJ-eq]")
+    fPEnukl = PEnukl[totals] / df[totals]
+
+    PEabw = primary_energy(df[SOURCES], type="Primärenergiefaktor Abwärme / Abfall [MJ-eq]")
+    fPEabw = PEabw[totals] / df[totals]
     return pd.DataFrame({"fPE":fPE,
                          "fPE,n.ern.":fPEnern,
-                         "fPE,ern.":fPEern}
+                         "fPE,ern.":fPEern,
+                         "fPE,nukl.":fPEnukl,
+                         "fPE,abw.":fPEabw,
+                         }
                         )
 
+def pe_consumption():
+    df = fetch_common().rename(columns={a: b for a, b in zip(pcs, SOURCES)})
+    totals = "total_consumption_avg"
+    #TODO: implement
+
+def pe_production():
+    df = fetch_1819().rename(columns={a: b for a, b in zip(pps, CARRIERS)})
+    pp = "total_production_avg"
+    #TODO: implement
+
+
 if __name__ == "__main__":
-    pe = pe_factors()
+    df = fetch_common()
+    pe = pe_factors(df)
+
 
 

@@ -294,10 +294,10 @@ PE_factors_OIB2019 = {
 }
 
 def add_PE(df):
- """
- calc PE factors for energy carriers
- :param df:
- :return:
- """
- pass
+    """
+    calc PE factors for energy carriers
+    :param df:
+    :return:
+    """
+    pass
 

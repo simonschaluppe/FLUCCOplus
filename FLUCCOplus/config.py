@@ -9,8 +9,8 @@ VERBOSE = True
 
 import logging
 logging.basicConfig(
-    # filename  = 'app.log',      # Log output file
-    level     = logging.WARNING,   # Output level
+    filename  = 'app.log',      # Log output file
+    level     = logging.DEBUG,   # Output level
 )
 
 

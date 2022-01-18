@@ -5,12 +5,13 @@ from FLUCCOplus.utils import *
 
 
 @log
-def read(path):#All data in kWh
+def read(path, **kwargs):#All data in kWh
     """All data in kWh"""
     df = pd.read_csv(path,
                      delimiter=";",
                      index_col="Datetime UCT",
                      parse_dates=["Datetime UCT"],
+                     **kwargs
                      )
     return df #All data in kWh
 
