@@ -112,3 +112,17 @@ def plot_HDW(df,
     ax.legend(legend, loc='lower left', fontsize=12)
     fig.tight_layout()
     return fig
+
+def plot_analyse(df, df2,
+                 ylabel="Energie",
+                 xlabel="Zeit [Stunden]",
+                 figsize=(15,6,),
+                 fig=None, ax=None, start=0, stop=8760):
+    xh = np.arange(0, 8760, 1)
+
+    if fig == None or ax == None:
+        fig, ax = plt.subplots(1, 1, figsize=figsize)
+        plt.plot(xh[start:stop], df[start:stop], "b", )
+        plt.plot(xh[start:stop], df2[start:stop], "g", )
+    ax.set_ylabel(ylabel)
+    ax.set_xlabel(xlabel)
