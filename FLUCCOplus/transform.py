@@ -1,11 +1,31 @@
-
-
+import numpy as np
 from sklearn import preprocessing
 
 from FLUCCOplus.utils import *
 
 from matplotlib.figure import Figure
 
+def zyklusscaler(timeserie, scalefactors:list[float], zyklus:int):
+    z = zyklus # self-defined period. It can be 24, 168 or 730 hour
+    factors = np.array(scalefactors) # list of scale factors
+    #timeserie = np.arange(0, 8760, 1)
+    if len(timeserie) > 8760:
+        timeseries = np.delete(timeserie, range(8760, 8784), axis=0)       # if timeseries bigger than 8760, cut by 8760
+    else:
+        timeseries = np.array(timeserie)
+              # e.g.: 8760 / 730 (=12). Scalefactor (=[1,2,3,4]) -> 12/4 (=3) -> timeseries must be
+                    # scaled with "timeseries/zyklus/len(scalefactors)"
+
+    factors_up = np.arange(0, 8760, 1)
+    g = int(len(timeseries) / z)
+    for i in range(len(factors)):
+        factors_up[(i * int(z / len(factors))):((i + 1) * int(z / len(factors)))] = factors[i]
+    for j in range(g - 1):
+        factors_up[(j + 1) * z:((j + 2) * z)] = factors_up[0:z]
+
+    timeseries_scaled = np.multiply(timeseries, factors_up)
+    return np.array(timeseries_scaled)[:8760]
+    #if zyklus 24 -> scalefactor must be
 
 def transform(support_points:list, hour_scale:int=8760):
     """
