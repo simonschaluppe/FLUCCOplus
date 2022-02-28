@@ -3,6 +3,14 @@ import FLUCCOplus.timeseries as ts
 
 from FLUCCOplus.utils import *
 
+POWER_RATINGS_MW = {
+    "Neuhof I": 18.,
+    "Neuhof III": 3.,
+    "Maustrenk": 14,
+    "STERN I": 2,
+    "STERN II": 12,
+    "STERN III": 6
+}
 
 @log
 def read(path, **kwargs):#All data in kWh
