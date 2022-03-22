@@ -61,9 +61,47 @@ def logg(f):
     return wrapper
 
 
+def plot_signal_bars(df, columns, ytick_average_max=False):
+    """takes a df series, with -1 and +1 denoting OFF and ON signals"""
+    desc_wind = pd.DataFrame()
+    df_step_wind = pd.DataFrame()
+    df_not_wind = pd.DataFrame()
+
+    # fig, ax = plt.subplots()
+    for c in columns:
+        df_step_wind[c] = df[c].shift(1).ne(df[c]).where(df[c] == 1).cumsum()
+        df_not_wind[c] = df[c].shift(1).ne(df[c]).where(df[c] == -1).cumsum()
+    df_step_wind.iloc[0, :] = 0
+    desc_wind["Zeitraum mit Signal [h]"] = df.where(df > 0).sum()
+    desc_wind["Nicht-Signal-Zeitraum [h]"] = 8760 - desc_wind["Zeitraum mit Signal [h]"]
+    desc_wind["Anzahl Signal-Perioden"] = df_step_wind.max()
+    desc_wind["Durchschnittliche Dauer Signal [h]"] = (
+                desc_wind["Zeitraum mit Signal [h]"] / desc_wind["Anzahl Signal-Perioden"])
+    desc_wind["Durchschnittliche Dauer Nicht-Signal [h]"] = desc_wind["Nicht-Signal-Zeitraum [h]"] / desc_wind[
+        "Anzahl Signal-Perioden"]
+
+    fig, ax = plt.subplots(1, 2, figsize=(9, 7))
+    desc_wind.loc[columns][["Zeitraum mit Signal [h]", "Nicht-Signal-Zeitraum [h]"]] \
+        .plot(kind="bar", color=["cyan", "black"], stacked=True, ax=ax[0]).set(ylabel="Stunden")
+    desc_wind.loc[columns][["Durchschnittliche Dauer Signal [h]", "Durchschnittliche Dauer Nicht-Signal [h]"]] \
+        .plot(kind="bar", color=["orange", "grey"], stacked=False, ax=ax[1]).set(ylabel="Stunden")
+    for p in ax[0].patches:
+        ax[0].annotate("{:.1f}%".format(p.get_height() * 100 / 8760),
+                       (p.get_x() + p.get_width() / 2., p.get_height() + p.get_y() - 5), ha='center', va='center',
+                       fontsize=7, color='black', xytext=(0, -8), textcoords='offset points')
+    for p in ax[1].patches:
+        ax[1].annotate("{:.0f}".format(p.get_height()), (p.get_x() + p.get_width() / 2., p.get_height()), ha='center',
+                       va='center', fontsize=7, color='black', xytext=(0, -8), textcoords='offset points')
+    if ytick_average_max:
+        ax[1].yaxis.set_ticks(np.arange(0, ytick_average_max, 24))  # TODO: as function parameters
+    return fig, ax
+
+
 if __name__ == "__main__":
     @log
     def test():
         pass
 
     test()
+
+
