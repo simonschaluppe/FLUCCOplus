@@ -80,7 +80,7 @@ def plot_signal_bars(df, columns, ytick_average_max=False):
     desc_wind["Durchschnittliche Dauer Nicht-Signal [h]"] = desc_wind["Nicht-Signal-Zeitraum [h]"] / desc_wind[
         "Anzahl Signal-Perioden"]
 
-    fig, ax = plt.subplots(1, 2, figsize=(9, 7))
+    fig, ax = plt.subplots(1, 2, figsize=(12, 7))
     desc_wind.loc[columns][["Zeitraum mit Signal [h]", "Nicht-Signal-Zeitraum [h]"]] \
         .plot(kind="bar", color=["cyan", "black"], stacked=True, ax=ax[0]).set(ylabel="Stunden")
     desc_wind.loc[columns][["Durchschnittliche Dauer Signal [h]", "Durchschnittliche Dauer Nicht-Signal [h]"]] \
@@ -94,6 +94,7 @@ def plot_signal_bars(df, columns, ytick_average_max=False):
                        va='center', fontsize=7, color='black', xytext=(0, -8), textcoords='offset points')
     if ytick_average_max:
         ax[1].yaxis.set_ticks(np.arange(0, ytick_average_max, 24))  # TODO: as function parameters
+    plt.grid(axis="x")
     return fig, ax
 
 
