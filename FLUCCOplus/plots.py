@@ -167,7 +167,7 @@ def plot_analyse_PVfirst(df,
                  winterweek_stop,
                  ylabel="Energie [GWh]",
                  xlabel="Zeit [Monate]",
-                figsize=(20, 12)):
+                figsize=(18, 11)):
 
     df_summer = df.loc[summerweek_start:summerweek_stop]
     df_winter = df.loc[winterweek_start:winterweek_stop]
@@ -225,7 +225,7 @@ def plot_analyse_WINDfirst(df,
                  winterweek_stop,
                  ylabel="Energie [GWh]",
                  xlabel="Zeit [Monate]",
-                figsize=(20, 12)):
+                figsize=(18, 11)):
 
     df_summer = df.loc[summerweek_start:summerweek_stop]
     df_winter = df.loc[winterweek_start:winterweek_stop]

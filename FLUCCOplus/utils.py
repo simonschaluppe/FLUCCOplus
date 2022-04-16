@@ -62,7 +62,7 @@ def logg(f):
 
 
 
-def plot_signal_bars(df, columns, ytick_average_max=False, figsize=True):
+def plot_signal_bars(df, columns, ytick_average_max=False, cut_ylim=False, figsize=True):
     """takes a df series, with -1 and +1 denoting OFF and ON signals"""
     desc_wind = pd.DataFrame()
     df_step_wind = pd.DataFrame()
@@ -77,9 +77,9 @@ def plot_signal_bars(df, columns, ytick_average_max=False, figsize=True):
     desc_wind["Nicht-Signal-Zeitraum [h]"] = len(df) - desc_wind["Zeitraum mit Signal [h]"]
     desc_wind["Anzahl Signal-Perioden"] = df_step_wind.max()
     desc_wind["Durchschnittliche Dauer Signal [h]"] = (
-                desc_wind["Zeitraum mit Signal [h]"] / desc_wind["Anzahl Signal-Perioden"])
+                    desc_wind["Zeitraum mit Signal [h]"] / desc_wind["Anzahl Signal-Perioden"])
     desc_wind["Durchschnittliche Dauer Nicht-Signal [h]"] = desc_wind["Nicht-Signal-Zeitraum [h]"] / desc_wind[
-        "Anzahl Signal-Perioden"]
+            "Anzahl Signal-Perioden"]
 
     fig, ax = plt.subplots(1, 2, figsize=figsize)
     desc_wind.loc[columns][["Zeitraum mit Signal [h]", "Nicht-Signal-Zeitraum [h]"]] \
@@ -95,6 +95,8 @@ def plot_signal_bars(df, columns, ytick_average_max=False, figsize=True):
                        va='center', fontsize=7, color='black', xytext=(0, -8), textcoords='offset points')
     if ytick_average_max:
         ax[1].yaxis.set_ticks(np.arange(0, ytick_average_max, 24))  # TODO: as function parameters
+    if cut_ylim:
+        plt.ylim(top=cut_ylim)
     plt.grid(axis="x")
     return fig, ax
 
