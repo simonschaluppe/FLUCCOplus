@@ -113,37 +113,54 @@ def plot_HDW(df,
     fig.tight_layout()
     return fig
 
+#def plot_comp_residuallast(df, df2):
+ #   for i, col in enumerate(df13_sign.columns):
+  #      vis = pd.pivot_table(df13_sign, index=df13_sign.index.date, columns=df13_sign.index.hour, values=col)
+   #     sns.heatmap(vis.T, cbar=False, yticklabels=False, ax=ax[i])
+    #    ax[i].set_title(col, loc="right", color="lime", fontsize=10, pad=-14)
+     #   months = MonthLocator()
+      #  monthsFmt = DateFormatter("%b")
+       # ax[i].xaxis.set_major_locator(months)
+        #ax[i].xaxis.set_major_formatter(monthsFmt)
+
+
+
 def plot_comp(df, df2,
-                 ylabel="Energie",
+                 ylabel="Energie [kWh]",
                  xlabel="Zeit [Stunden]",
-                 figsize=(15,6,),
-                 fig=None, ax=None, start=0, stop=8760):
+                 figsize=(15,6),
+                 fig=None, ax=None, start=0, stop=8760, legend1=False, legend2=False):
     xh = np.arange(0, 8760, 1)
 
     if fig == None or ax == None:
         fig, ax = plt.subplots(1, 1, figsize=figsize)
-        plt.plot(xh[start:stop], df[start:stop], "b", )
-        plt.plot(xh[start:stop], df2[start:stop], "g", )
+        plt.plot(xh[start:stop], df[start:stop], "b", label=legend1)
+        plt.plot(xh[start:stop], df2[start:stop], "g", label=legend2)
     ax.set_ylabel(ylabel)
     ax.set_xlabel(xlabel)
+    ax.legend()
+    return fig, ax
 
 def plot_monthly_comp(df, df2,
-                 ylabel="Energie",
+                 ylabel="Energie [kWh]",
                  xlabel="Zeit [Monate]",
-                 figsize=(15,6,),
-                 fig=None, ax=None, start=0, stop=12):
+                 figsize=(15,6),
+                 fig=None, ax=None, start=0, stop=12, legend1=False, legend2=False):
     xh = np.arange(1, 13, 1)
 
     if fig == None or ax == None:
         fig, ax = plt.subplots(1, 1, figsize=figsize)
-        plt.plot(xh[start:stop], df.resample("M").sum()[start:stop], "b", )
-        plt.plot(xh[start:stop], df2.resample("M").sum()[start:stop], "r", )
+        plt.plot(xh[start:stop], df.resample("M").sum()[start:stop], "b", label=legend1)
+        plt.plot(xh[start:stop], df2.resample("M").sum()[start:stop], "r", label=legend2)
     ax.set_ylabel(ylabel)
     ax.set_xlabel(xlabel)
     ax.set_xticks(xh)
+    ax.ticklabel_format(axis='both', style='plain')
+    ax.legend(loc='upper right')
+    return fig, ax
 
 def plot_monthly(df,
-                 ylabel="Energie",
+                 ylabel="Energie [kWh]",
                  xlabel="Zeit [Monate]",
                  figsize=(15,6),
                  fig=None, ax=None, start=0, stop=12):
@@ -158,14 +175,16 @@ def plot_monthly(df,
     ax.set_ylabel(ylabel)
     ax.set_xlabel(xlabel)
     ax.set_xticks(xh)
+    ax.ticklabel_format(axis='both', style='plain')
     ax.legend(loc='upper right')
+    return fig, ax
 
 def plot_analyse_PVfirst(df,
                  summerweek_start,
                  summerweek_stop,
                  winterweek_start,
                  winterweek_stop,
-                 ylabel="Energie [GWh]",
+                 ylabel="Energie [kWh]",
                  xlabel="Zeit [Monate]",
                 figsize=(18, 11)):
 
@@ -223,7 +242,7 @@ def plot_analyse_WINDfirst(df,
                  summerweek_stop,
                  winterweek_start,
                  winterweek_stop,
-                 ylabel="Energie [GWh]",
+                 ylabel="Energie [kWh]",
                  xlabel="Zeit [Monate]",
                 figsize=(18, 11)):
 
