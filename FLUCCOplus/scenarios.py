@@ -1,6 +1,8 @@
 
 import FLUCCOplus.config as config
+import FLUCCOplus.transform as traffo
 from FLUCCOplus.utils import *
+
 
 
 
@@ -100,9 +102,9 @@ def factors(source, target, scenarios):
 
 
 class Scenario:
+    "represents an Electricity SCenario with variable scaling of energy carrieres and demands, and transformations "
 
-
-    def __init__(self, name, scenario, em_base=None):
+    def __init__(self, name, scenario, em_base=None, transformation_scenario=None):
         self.name = name
         scenarios = all()
         self.annuals = scenarios[scenarios.index==name].transpose().rename(columns={self.name: "target"})
@@ -115,8 +117,32 @@ class Scenario:
         self.base_year = None
         self.load_base(em_base)
 
-        self.TSD = pd.DataFrame()
+        self.TSD = pd.DataFrame() # the current time step data of the scenario
         self._scale_base_to_target()
+
+        if transformation_scenario is None:
+            self.transformations = []
+        else:
+            self.transformations = transformation_scenario
+            self.apply(self.transformations)
+
+
+    def reset(self):
+        "resets the scneario to its base scaling, resetting any transformations"
+        self._scale_base_to_target()
+
+    def apply(self, traffo_scenario, reset=False):
+        if reset:
+            self.reset()
+        self.transformations = traffo_scenario
+        "applies a transformation scenario to the TSD of the scenario"
+        for transformation in traffo_scenario:
+            type = transformation["type"]
+            if type not in self.scalable:
+                raise ValueError(f"type {type} nicht skalierbar für scenario (verfügbar: {self.scalable}")
+            weights = transformation["weights"]
+            timeframe = transformation["timeframe"]
+            self.TSD[type] = traffo.zyklusscaler(self.TSD[type], weights, timeframe)
 
 
     def load_base(self, em_base):

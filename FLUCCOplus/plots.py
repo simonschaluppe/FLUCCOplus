@@ -113,16 +113,185 @@ def plot_HDW(df,
     fig.tight_layout()
     return fig
 
-def plot_analyse(df, df2,
-                 ylabel="Energie",
+#def plot_comp_residuallast(df, df2):
+ #   for i, col in enumerate(df13_sign.columns):
+  #      vis = pd.pivot_table(df13_sign, index=df13_sign.index.date, columns=df13_sign.index.hour, values=col)
+   #     sns.heatmap(vis.T, cbar=False, yticklabels=False, ax=ax[i])
+    #    ax[i].set_title(col, loc="right", color="lime", fontsize=10, pad=-14)
+     #   months = MonthLocator()
+      #  monthsFmt = DateFormatter("%b")
+       # ax[i].xaxis.set_major_locator(months)
+        #ax[i].xaxis.set_major_formatter(monthsFmt)
+
+
+
+def plot_comp(df, df2,
+                 ylabel="Energie [kWh]",
                  xlabel="Zeit [Stunden]",
-                 figsize=(15,6,),
-                 fig=None, ax=None, start=0, stop=8760):
+                 figsize=(15,6),
+                 fig=None, ax=None, start=0, stop=8760, legend1=False, legend2=False):
     xh = np.arange(0, 8760, 1)
 
     if fig == None or ax == None:
         fig, ax = plt.subplots(1, 1, figsize=figsize)
-        plt.plot(xh[start:stop], df[start:stop], "b", )
-        plt.plot(xh[start:stop], df2[start:stop], "g", )
+        plt.plot(xh[start:stop], df[start:stop], "b", label=legend1)
+        plt.plot(xh[start:stop], df2[start:stop], "g", label=legend2)
     ax.set_ylabel(ylabel)
     ax.set_xlabel(xlabel)
+    ax.legend()
+    return fig, ax
+
+def plot_monthly_comp(df, df2,
+                 ylabel="Energie [kWh]",
+                 xlabel="Zeit [Monate]",
+                 figsize=(15,6),
+                 fig=None, ax=None, start=0, stop=12, legend1=False, legend2=False):
+    xh = np.arange(1, 13, 1)
+
+    if fig == None or ax == None:
+        fig, ax = plt.subplots(1, 1, figsize=figsize)
+        plt.plot(xh[start:stop], df.resample("M").sum()[start:stop], label=legend1)
+        plt.plot(xh[start:stop], df2.resample("M").sum()[start:stop], label=legend2)
+
+    ax.set_ylabel(ylabel)
+    ax.set_xlabel(xlabel)
+    ax.set_xticks(xh)
+    ax.ticklabel_format(axis='both', style='plain')
+    ax.legend(loc='upper right')
+    return fig, ax
+
+def plot_monthly(df,
+                 ylabel="Energie [kWh]",
+                 xlabel="Zeit [Monate]",
+                 figsize=(15,6),
+                 fig=None, ax=None, start=0, stop=12):
+
+    xh = np.arange(1, 13, 1)
+    colName = ['Photovoltaik', 'Windkraft', 'Pumpspeicher', 'Laufkraft', 'Strombedarf']
+    colors = {colName[0]: 'orange', colName[1]: 'cian', colName[2]: 'forestgreen',
+              colName[3]: 'darkgreen', colName[4]: 'gray'}
+    if fig == None or ax == None:
+        fig, ax = plt.subplots(1, 1, figsize=figsize)
+        plt.plot(xh[start:stop], df.resample("M").sum()[start:stop])
+    ax.set_ylabel(ylabel)
+    ax.set_xlabel(xlabel)
+    ax.set_xticks(xh)
+    ax.ticklabel_format(axis='both', style='plain')
+    ax.legend(loc='upper right')
+    return fig, ax
+
+def plot_analyse_PVfirst(df,
+                 summerweek_start,
+                 summerweek_stop,
+                 winterweek_start,
+                 winterweek_stop,
+                 ylabel="Energie [kWh]",
+                 xlabel="Zeit [Monate]",
+                figsize=(18, 11)):
+
+    df_summer = df.loc[summerweek_start:summerweek_stop]
+    df_winter = df.loc[winterweek_start:winterweek_stop]
+
+    max_score_wind = max((df_summer["RES"].max()), (df_winter["RES"].max()), (df_summer["Strombedarf"].max()), (df_winter["Strombedarf"].max()))
+    ax_scale_wind = 0, (max_score_wind + 1000)
+    ax_scale_wind2 = ((min((df_summer["Residual_ohne_Wind"].min()), (df_winter["Residual_ohne_Wind"].min()))) - 1000), (
+                (max((df_summer["Residual_ohne_Wind"].max()), (df_winter["Residual_ohne_Wind"].max()))) + 1000)
+
+    fig, ax = plt.subplots(3, 2, figsize=figsize)
+
+    df_summer["Strombedarf"].plot(ax=ax[0, 0]).set(title="Sommerwoche Wind", xlabel=xlabel,
+                                                   ylabel=ylabel, ylim=ax_scale_wind)
+    fill1 = ax[0, 0].fill_between(df_summer.index, df_summer["Non_volatiles"], color="forestgreen")
+    fill2 = ax[0, 0].fill_between(df_summer.index, df_summer["Non_volatiles"]+df_summer["PVDV"], df_summer["Non_volatiles"], color='orange')
+    fill3 = ax[0, 0].fill_between(df_summer.index, df_summer["Non_volatiles"]+df_summer["PVDV"], df_summer["Non_volatiles"]+df_summer["PVDV"]+df_summer["WindkraftDV"], color="c")
+    fill4 = ax[0, 0].fill_between(df_summer.index, df_summer["Non_volatiles"]+df_summer["PVDV"]+df_summer["WindkraftDV"], df_summer["Non_volatiles"]+df_summer["PVDV"]+df_summer["WindkraftDV"]+df_summer["PVUeSch"], color="y")
+    fill5 = ax[0, 0].fill_between(df_summer.index, df_summer["Non_volatiles"]+df_summer["PVDV"]+df_summer["WindkraftDV"]+df_summer["PVUeSch"] + df_summer["WindkraftUeSch"], df_summer["Non_volatiles"]+df_summer["PVDV"]+df_summer["WindkraftDV"]+df_summer["PVUeSch"], color='blue')
+
+    df_winter["Strombedarf"].plot(ax=ax[0, 1]).set(title="Winterwoche Wind", xlabel=xlabel,
+                                                   ylabel=ylabel, ylim=ax_scale_wind)
+    fill6 = ax[0, 1].fill_between(df_winter.index, df_winter["Non_volatiles"], color="forestgreen")
+    fill7 = ax[0, 1].fill_between(df_winter.index, df_winter["Non_volatiles"]+df_winter["PVDV"], df_winter["Non_volatiles"], color='orange')
+    fill8 = ax[0, 1].fill_between(df_winter.index, df_winter["Non_volatiles"]+df_winter["PVDV"],df_winter["Non_volatiles"]+df_winter["PVDV"]+df_winter["WindkraftDV"], color="c")
+    fill9 = ax[0, 1].fill_between(df_winter.index, df_winter["Non_volatiles"]+df_winter["PVDV"]+df_winter["WindkraftDV"],df_winter["Non_volatiles"] + df_winter["PVDV"]+df_winter["WindkraftDV"]+df_winter["PVUeSch"], color="y")
+    fill10 = ax[0, 1].fill_between(df_winter.index, df_winter["Non_volatiles"]+df_winter["PVDV"]+df_winter["WindkraftDV"]+df_winter["PVUeSch"] + df_winter["WindkraftUeSch"], df_winter["Non_volatiles"]+df_winter["PVDV"]+df_winter["WindkraftDV"]+df_winter["PVUeSch"], color="blue")
+    ax[0, 0].legend([fill5, fill4, fill3, fill2, fill1],
+                    ["Windkraft Überschuss", "PV Überschuss", "Windkraft Direktverbrauch", "PV Direktverbrauch",
+                     "Nicht volatile Energieträger Direktverbrauch"], loc="lower left")
+    ax[0, 1].legend([fill10, fill9, fill8, fill7, fill6],
+                    ["Windkraft Überschuss", "PV Überschuss", "Windkraft Direktverbrauch", "PV Direktverbrauch",
+                     "Nicht volatile Energieträger Direktverbrauch"], loc="lower left")
+
+    df_summer[["Wind_useful", "Windkraft", "Residual_ohne_Wind", "Wind_Nennleistung"]].plot(ax=ax[1, 0]).set(
+        xlabel="Datum", ylabel="Energie [GWh]", ylim=ax_scale_wind2)
+    fill11 = ax[1, 0].fill_between(df_summer.index, df_summer["Zero"], df_summer["Wind_useful"], color='c')
+    fill12 = ax[1, 0].fill_between(df_summer.index, df_summer["Wind_useful"], df_summer["Windkraft"], color='blue')
+    df_winter[["Wind_useful", "Windkraft", "Residual_ohne_Wind", "Wind_Nennleistung"]].plot(ax=ax[1, 1]).set(
+        xlabel="Datum", ylabel="Energie [GWh]", ylim=ax_scale_wind2)
+    fill13 = ax[1, 1].fill_between(df_winter.index, df_winter["Zero"], df_winter["Wind_useful"], color='c')
+    fill14 = ax[1, 1].fill_between(df_winter.index, df_winter["Wind_useful"], df_winter["Windkraft"], color='blue')
+
+    df_windrel_summer = df_summer.Wind_rel.where(df_summer.Windkraft > df_summer.Wind_useful)
+    df_windrel_summer.plot(ax=ax[2, 0]).set(xlabel="Datum", ylabel="Windkraft Überschuss zur installierten Leistung",
+                                            ylim=(0, 1))
+    df_windrel_winter = df_winter.Wind_rel.where(df_winter.Windkraft > df_winter.Wind_useful)
+    df_windrel_winter.plot(ax=ax[2, 1]).set(xlabel="Datum", ylabel="Windkraft Überschuss zur installierten Leistung",
+                                            ylim=(0, 1))
+    return fig, ax
+
+def plot_analyse_WINDfirst(df,
+                 summerweek_start,
+                 summerweek_stop,
+                 winterweek_start,
+                 winterweek_stop,
+                 ylabel="Energie [kWh]",
+                 xlabel="Zeit [Monate]",
+                figsize=(18, 11)):
+
+    df_summer = df.loc[summerweek_start:summerweek_stop]
+    df_winter = df.loc[winterweek_start:winterweek_stop]
+
+    max_score_wind = max((df_summer["RES"].max()), (df_winter["RES"].max()))
+    ax_scale_wind = 0, (max_score_wind + 1000)
+    ax_scale_wind2 = ((min((df_summer["Residual_ohne_Wind"].min()), (df_winter["Residual_ohne_Wind"].min()))) - 1000), (
+                (max((df_summer["Residual_ohne_Wind"].max()), (df_winter["Residual_ohne_Wind"].max()))) + 1000)
+
+    fig, ax = plt.subplots(3, 2, figsize=figsize)
+
+    df_summer["Strombedarf"].plot(ax=ax[0, 0]).set(title="Sommerwoche Wind", xlabel=xlabel,
+                                                   ylabel=ylabel, ylim=ax_scale_wind)
+    fill1 = ax[0, 0].fill_between(df_summer.index, df_summer["Non_volatiles"], color="forestgreen")
+    fill2 = ax[0, 0].fill_between(df_summer.index, df_summer["WindkraftDV"]+df_summer["Non_volatiles"], df_summer["Non_volatiles"], color='c')
+    fill3 = ax[0, 0].fill_between(df_summer.index, df_summer["WindkraftDV"]+df_summer["Non_volatiles"] + df_summer["PVDV"], df_summer["WindkraftDV"]+df_summer["Non_volatiles"] + df_summer["PVDV"]+df_summer["WindkraftUeSch"], color="blue")
+    fill4 = ax[0, 0].fill_between(df_summer.index, df_summer["WindkraftDV"]+df_summer["Non_volatiles"] + df_summer["PVDV"], df_summer["WindkraftDV"]+df_summer["Non_volatiles"], color="y")
+    fill5 = ax[0, 0].fill_between(df_summer.index, df_summer["RES"]-df_summer["PVUeSch"], df_summer["RES"], color='orange')
+
+    df_winter["Strombedarf"].plot(ax=ax[0, 1]).set(title="Winterwoche Wind", xlabel=xlabel,
+                                                   ylabel=ylabel, ylim=ax_scale_wind)
+    fill6 = ax[0, 1].fill_between(df_winter.index, df_winter["Non_volatiles"], color="forestgreen")
+    fill7 = ax[0, 1].fill_between(df_winter.index, df_winter["WindkraftDV"]+df_winter["Non_volatiles"], df_winter["Non_volatiles"], color='c')
+    fill8 = ax[0, 1].fill_between(df_winter.index, df_winter["WindkraftDV"]+df_winter["Non_volatiles"] + df_winter["PVDV"], df_winter["WindkraftDV"]+df_winter["Non_volatiles"] + df_winter["PVDV"]+df_winter["WindkraftUeSch"], color="blue")
+    fill9 = ax[0, 1].fill_between(df_winter.index, df_winter["Non_volatiles"]+df_winter["WindkraftDV"] + df_winter["PVDV"], df_winter["WindkraftDV"]+df_winter["Non_volatiles"], color="y")
+    fill10 = ax[0, 1].fill_between(df_winter.index, df_winter["RES"]-df_winter["PVUeSch"], df_winter["RES"], color='orange')
+    ax[0, 0].legend([fill5, fill4, fill3, fill2, fill1],
+                    ["PV Überschuss", "PV Direktverbrauch", "Windkraft Überschuss", "Wind Direktverbrauch",
+                     "Nicht volatile Energieträger Direktverbrauch"], loc="lower left")
+    ax[0, 1].legend([fill10, fill9, fill8, fill7, fill6],
+                    ["PV Überschuss", "PV Direktverbrauch", "Windkraft Überschuss", "Wind Direktverbrauch",
+                     "Nicht volatile Energieträger Direktverbrauch"], loc="lower left")
+
+    df_summer[["Wind_useful", "Windkraft", "Residual_ohne_Wind", "Wind_Nennleistung"]].plot(ax=ax[1, 0]).set(
+        xlabel="Datum", ylabel="Energie [GWh]", ylim=ax_scale_wind2)
+    fill11 = ax[1, 0].fill_between(df_summer.index, df_summer["Zero"], df_summer["Windkraft"]-df_summer["WindkraftUeSch"], color='c')
+    fill12 = ax[1, 0].fill_between(df_summer.index, df_summer["Wind_useful"], df_summer["Windkraft"], where=df_summer["WindkraftUeSch"]>0, color='blue')
+    df_winter[["Wind_useful", "Windkraft", "Residual_ohne_Wind", "Wind_Nennleistung"]].plot(ax=ax[1, 1]).set(
+        xlabel="Datum", ylabel="Energie [GWh]", ylim=ax_scale_wind2)
+    fill13 = ax[1, 1].fill_between(df_winter.index, df_winter["Zero"], df_winter["Windkraft"]-df_winter["WindkraftUeSch"], color='c')
+    fill14 = ax[1, 1].fill_between(df_winter.index, df_winter["Wind_useful"], df_winter["Windkraft"], where=df_winter["WindkraftUeSch"]>0, color='blue')
+
+    df_windrel_summer = df_summer.Wind_rel.where(df_summer.Windkraft > df_summer.Wind_useful)
+    df_windrel_summer.plot(ax=ax[2, 0]).set(xlabel="Datum", ylabel="Windkraft Überschuss zur installierten Leistung",
+                                            ylim=(0, 1))
+    df_windrel_winter = df_winter.Wind_rel.where(df_winter.Windkraft > df_winter.Wind_useful)
+    df_windrel_winter.plot(ax=ax[2, 1]).set(xlabel="Datum", ylabel="Windkraft Überschuss zur installierten Leistung",
+                                            ylim=(0, 1))
+    return fig, ax

@@ -61,7 +61,8 @@ def logg(f):
     return wrapper
 
 
-def plot_signal_bars(df, columns, ytick_average_max=False):
+
+def plot_signal_bars(df, columns, ytick_average_max=False, cut_ylim=False, figsize=True):
     """takes a df series, with -1 and +1 denoting OFF and ON signals"""
     desc_wind = pd.DataFrame()
     df_step_wind = pd.DataFrame()
@@ -73,20 +74,20 @@ def plot_signal_bars(df, columns, ytick_average_max=False):
         df_not_wind[c] = df[c].shift(1).ne(df[c]).where(df[c] == -1).cumsum()
     df_step_wind.iloc[0, :] = 0
     desc_wind["Zeitraum mit Signal [h]"] = df.where(df > 0).sum()
-    desc_wind["Nicht-Signal-Zeitraum [h]"] = 8760 - desc_wind["Zeitraum mit Signal [h]"]
+    desc_wind["Nicht-Signal-Zeitraum [h]"] = len(df) - desc_wind["Zeitraum mit Signal [h]"]
     desc_wind["Anzahl Signal-Perioden"] = df_step_wind.max()
     desc_wind["Durchschnittliche Dauer Signal [h]"] = (
-                desc_wind["Zeitraum mit Signal [h]"] / desc_wind["Anzahl Signal-Perioden"])
+                    desc_wind["Zeitraum mit Signal [h]"] / desc_wind["Anzahl Signal-Perioden"])
     desc_wind["Durchschnittliche Dauer Nicht-Signal [h]"] = desc_wind["Nicht-Signal-Zeitraum [h]"] / desc_wind[
-        "Anzahl Signal-Perioden"]
+            "Anzahl Signal-Perioden"]
 
-    fig, ax = plt.subplots(1, 2, figsize=(9, 7))
+    fig, ax = plt.subplots(1, 2, figsize=figsize)
     desc_wind.loc[columns][["Zeitraum mit Signal [h]", "Nicht-Signal-Zeitraum [h]"]] \
         .plot(kind="bar", color=["cyan", "black"], stacked=True, ax=ax[0]).set(ylabel="Stunden")
     desc_wind.loc[columns][["Durchschnittliche Dauer Signal [h]", "Durchschnittliche Dauer Nicht-Signal [h]"]] \
         .plot(kind="bar", color=["orange", "grey"], stacked=False, ax=ax[1]).set(ylabel="Stunden")
     for p in ax[0].patches:
-        ax[0].annotate("{:.1f}%".format(p.get_height() * 100 / 8760),
+        ax[0].annotate("{:.1f}%".format(p.get_height() * 100 / len(df)),
                        (p.get_x() + p.get_width() / 2., p.get_height() + p.get_y() - 5), ha='center', va='center',
                        fontsize=7, color='black', xytext=(0, -8), textcoords='offset points')
     for p in ax[1].patches:
@@ -94,7 +95,81 @@ def plot_signal_bars(df, columns, ytick_average_max=False):
                        va='center', fontsize=7, color='black', xytext=(0, -8), textcoords='offset points')
     if ytick_average_max:
         ax[1].yaxis.set_ticks(np.arange(0, ytick_average_max, 24))  # TODO: as function parameters
+    if cut_ylim:
+        plt.ylim(top=cut_ylim)
+    plt.grid(axis="x")
     return fig, ax
+
+def Ueberschuesse_PVfirst(df):
+    df["Non_volatiles"] = df.Pumpspeicher + df.Laufkraft
+    df["RESohneWind"] = df.Laufkraft + df.Photovoltaik + df.Pumpspeicher
+    df["Residual_ohne_Wind"] = df.Strombedarf - df.Photovoltaik - df.Non_volatiles
+    df["Zero"] = 0
+    df["Wind_useful"] = (df[["Windkraft", "Residual_ohne_Wind"]]).min(axis=1).clip(0, None)
+    df["WindkraftUeSch"] = 0  # Überschuss
+    df["WindkraftDV"] = 0  # Direktverbrauch
+    df["WindkraftLast"] = 0
+    df["PVUeSch"] = 0  # Überschuss
+    df["PVDV"] = 0 # Direktverbrauch
+    for t in range(8760):
+        if (df.Photovoltaik[t] + df.Non_volatiles[t]) >= df.Strombedarf[t]:
+            df.WindkraftUeSch[t] = df.Windkraft[t]
+            df.PVDV[t] = df.Strombedarf[t] - df.Non_volatiles[t]
+            df.PVUeSch[t] = df.Photovoltaik[t] - df.PVDV[t]
+        else:
+            if df.RES[t] <= df.Strombedarf[t]:
+                df.WindkraftUeSch[t] = 0
+                df.PVUeSch[t] = 0
+                df.WindkraftDV[t] = df.Windkraft[t]
+                df.PVDV[t] = df.Photovoltaik[t]
+            else:
+                df.PVDV[t] = df.Photovoltaik[t]
+                df.WindkraftDV[t] = df.Strombedarf[t] - (df.PVDV[t] + df.Non_volatiles[t])
+                df.WindkraftUeSch[t] = df.Windkraft[t] - df.WindkraftDV[t]
+
+        if df.RES[t] > df.Strombedarf[t]:
+            df.WindkraftLast[t] = df.Strombedarf[t] - df.RES[t] + df.Windkraft[t]
+    return df
+
+def Ueberschuesse_WINDfirst(df2):
+    df2["Non_volatiles"] = df2.Pumpspeicher + df2.Laufkraft
+    df2["Zero"] = 0
+    df2["Residual_ohne_Wind"] = df2.Strombedarf - df2.Non_volatiles
+    df2["Wind_useful"] = (df2[["Windkraft", "Residual_ohne_Wind"]]).min(axis=1).clip(0, None)
+    df2["WindkraftUeSch"] = 0  # Überschuss
+    df2["WindkraftDV"] = 0
+    df2["WindkraftLast"] = 0  # Direktverbrauch
+    df2["PVUeSch"] = 0  # Überschuss
+    df2["PVLast"] = 0  # Direktverbrauch
+    df2["PVDV"] = 0
+    for t in range(8760):
+        if (df2.Windkraft[t] + df2.Non_volatiles[t]) <= df2.Strombedarf[t]:
+            df2.WindkraftDV[t] = df2.Windkraft[t]
+        if (df2.Windkraft[t] + df2.Non_volatiles[t]) > df2.Strombedarf[t]:
+            if df2.Non_volatiles[t] > df2.Strombedarf[t]:
+                df2.WindkraftUeSch[t] = df2.Windkraft[t]
+            else:
+                df2.WindkraftUeSch[t] = df2.Windkraft[t] + df2.Non_volatiles[t] - df2.Strombedarf[t]
+                df2.WindkraftDV[t] = df2.Strombedarf[t] - df2.Non_volatiles[t]
+
+        if (df2.Windkraft[t] + df2.Non_volatiles[t]) >= df2.Strombedarf[t]:
+            df2.PVUeSch[t] = df2.Photovoltaik[t]
+        elif (df2.Windkraft[t] + df2.Non_volatiles[t]) < df2.Strombedarf[t]:
+            if df2.RES[t] < df2.Strombedarf[t]:
+                df2.PVUeSch[t] = 0
+                df2.PVDV[t] = df2.Photovoltaik[t]
+            else:
+                df2.PVDV[t] = df2.Strombedarf[t] - df2.Non_volatiles[t] - df2.WindkraftDV[t]
+                df2.PVUeSch[t] = df2.Photovoltaik[t] - df2.PVDV[t]
+
+    #    if df.RES[t] > df.Strombedarf[t]:
+    #        df.PVLast[t] = df.Strombedarf[t] - df.RES[t] + df.Photovoltaik[t]
+    #    if df.RES[t] > df.Strombedarf[t]:
+    #       df.WindkraftLast[t] = df.Strombedarf[t] - df.RES[t] + df.Windkraft[t]
+    df2["RESohnePV"] = df2.Laufkraft + df2.Windkraft + df2.Pumpspeicher
+    df2["Residual_ohne_PV"] = df2.Strombedarf - df2.Photovoltaik - df2.Non_volatiles
+
+    return df2
 
 
 if __name__ == "__main__":
