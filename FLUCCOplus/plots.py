@@ -150,8 +150,9 @@ def plot_monthly_comp(df, df2,
 
     if fig == None or ax == None:
         fig, ax = plt.subplots(1, 1, figsize=figsize)
-        plt.plot(xh[start:stop], df.resample("M").sum()[start:stop], "b", label=legend1)
-        plt.plot(xh[start:stop], df2.resample("M").sum()[start:stop], "r", label=legend2)
+        plt.plot(xh[start:stop], df.resample("M").sum()[start:stop], label=legend1)
+        plt.plot(xh[start:stop], df2.resample("M").sum()[start:stop], label=legend2)
+
     ax.set_ylabel(ylabel)
     ax.set_xlabel(xlabel)
     ax.set_xticks(xh)
