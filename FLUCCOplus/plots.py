@@ -1,3 +1,5 @@
+import pandas as pd
+
 from FLUCCOplus.utils import *
 from FLUCCOplus.notebooks import *
 
@@ -168,7 +170,7 @@ def plot_monthly(df,
 
     xh = np.arange(1, 13, 1)
     colName = ['Photovoltaik', 'Windkraft', 'Pumpspeicher', 'Laufkraft', 'Strombedarf']
-    colors = {colName[0]: 'orange', colName[1]: 'cian', colName[2]: 'forestgreen',
+    colors = {colName[0]: 'orange', colName[1]: 'cyan', colName[2]: 'forestgreen',
               colName[3]: 'darkgreen', colName[4]: 'gray'}
     if fig == None or ax == None:
         fig, ax = plt.subplots(1, 1, figsize=figsize)
@@ -295,3 +297,49 @@ def plot_analyse_WINDfirst(df,
     df_windrel_winter.plot(ax=ax[2, 1]).set(xlabel="Datum", ylabel="Windkraft Überschuss zur installierten Leistung",
                                             ylim=(0, 1))
     return fig, ax
+
+
+
+def heatmap_ax(series, ax, heatmap_args=None, ylabel=None):
+    from matplotlib.dates import MonthLocator
+    from matplotlib.dates import DateFormatter
+    df = pd.DataFrame(series)
+    # fig, ax = plt.subplots(1, 1, sharex=True, sharey=True, figsize=(12, 6))
+    vis = pd.pivot_table(df, index=df.index.date, columns=df.index.hour, values=None)
+
+    if not heatmap_args: heatmap_args = {}
+    sns.heatmap(vis.T, ax=ax, **heatmap_args)
+    # ax[0].set_title(label=f"{name}", loc="right", color="gold", fontsize=12, pad=-11)
+    months = MonthLocator()
+    monthsFmt = DateFormatter("%b")
+    ax.xaxis.set_major_locator(months)
+    ax.xaxis.set_major_formatter(monthsFmt)
+    ax.set_ylabel(ylabel)
+    return ax
+
+def heatmap_RG(series, ax, heatmap_args=None):
+    #check if cmaps in args
+    if heatmap_args is None:
+        heatmap_args = {"cmap":"RdYlGn"}
+    elif "cmap" not in heatmap_args.keys():
+        heatmap_args["cmap"] = "RdYlGn"
+    return heatmap_ax(series, ax, heatmap_args=heatmap_args)
+
+def heatmap_figure(df, *params, figsize=(12, 6)):
+    if type(df) == pd.Series:
+        fig, ax = plt.subplots(1, 1, figsize=figsize)
+        ax = heatmap_RG(df, *params, ax=ax)
+
+    elif type(df) == pd.DataFrame:
+        n = len(df.columns)
+        fig, ax = plt.subplots(n, 1, figsize=figsize)
+        for i, c in enumerate(df.columns):
+            ax[i] = heatmap_RG(df[c], *params, ax=ax[i])
+    else:
+        raise TypeError(f"df type pd.Series or pd.Dataframe expected (got {type(df)})")
+    return fig, ax
+
+
+def pie(df, **params):
+    pass
+

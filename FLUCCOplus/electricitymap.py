@@ -190,7 +190,11 @@ def read_interim(file, encoding="cp850"):
 
 @logg
 def start_pipeline(df):
+
     return df.copy()
+
+def fill_values(df):
+    return df.ffill()
 
 @logg
 def clean151617(df):
@@ -203,6 +207,7 @@ def clean151617(df):
                 'total_import_avg,total_export_avg,'
                 'carbon_intensity_avg,power_origin_percent_biomass_avg,power_origin_percent_coal_avg,power_origin_percent_gas_avg,power_origin_percent_hydro_avg,power_origin_percent_nuclear_avg,power_origin_percent_oil_avg,power_origin_percent_solar_avg,power_origin_percent_wind_avg,power_origin_percent_geothermal_avg,power_origin_percent_unknown_avg,'
                 'power_origin_percent_hydro_discharge_avg', axis=1)
+            .pipe(fill_values)
             .astype(float)
             )
 
@@ -258,6 +263,7 @@ def fetch_1819():
     return (_read_raw("../data/raw/electricityMap/Electricity_map_CO2_AT_2018_2019.csv")
             .pipe(start_pipeline)
             .drop(header_junk, axis=1)
+            .pipe(fill_values)
             .astype(float)
             )
 

@@ -21,6 +21,7 @@ def read(path, **kwargs):#All data in kWh
                      parse_dates=["Datetime UCT"],
                      **kwargs
                      )
+    df = df.astype(float)
     return df #All data in kWh
 
 @logg
