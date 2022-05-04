@@ -5,7 +5,7 @@ import FLUCCOplus.config as config
 import FLUCCOplus.web as web
 from pathlib import Path
 
-PEEXCEL_PATH = config.DATA_PROCESSED / Path("peexcel_raw.csv")
+PEEXCEL_PATH = config.DATA_PROCESSED / Path("peexcel_normalized.csv")
 WEB_PATH = config.DATA_PROCESSED / Path("WEB_normalized.csv")
 
 
