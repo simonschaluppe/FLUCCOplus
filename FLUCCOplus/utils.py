@@ -171,7 +171,23 @@ def Ueberschuesse_WINDfirst(df2):
 
     return df2
 
-
+def maxnutz():
+    import FLUCCOplus.config as config
+    from pathlib import Path
+    df_nutz = pd.DataFrame()
+    df_nutz["Schaltsignal_REF"] = pd.read_csv(config.DATA_PROCESSED / Path("MANutz/Schaltsignal_REF.csv")).iloc[:, 1]
+    df_nutz["Schaltsignal_REG"] = pd.read_csv(config.DATA_PROCESSED / Path("MANutz/Schaltsignal_REG.csv")).iloc[:, 1]
+    df_nutz["Schaltsignal_UBA30"] = pd.read_csv(config.DATA_PROCESSED / Path("MANutz/Schaltsignal_uba30.csv")).iloc[:,
+                                   1]
+    df_nutz["Schaltsignal_UBA50"] = pd.read_csv(config.DATA_PROCESSED / Path("MANutz/Schaltsignal_uba50.csv")).iloc[:,
+                                   1]
+    df_nutz["Schaltsignal_VEIGL30"] = pd.read_csv(config.DATA_PROCESSED / Path("MANutz/Schaltsignal_veigl30.csv")).iloc[
+                                     :, 1]
+    df_nutz["Schaltsignal_VEIGL50"] = pd.read_csv(config.DATA_PROCESSED / Path("MANutz/Schaltsignal_veigl50.csv")).iloc[
+                                     :, 1]
+    df_nutz = df_nutz.replace(1, -1)
+    df_nutz = df_nutz.replace(0, 1).replace(-1, 0)
+    return df_nutz.to_csv("../data/processed/MANutz/maxnutz_normalized.csv", sep=";", decimal=",")
 
 if __name__ == "__main__":
     @log

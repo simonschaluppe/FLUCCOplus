@@ -109,3 +109,34 @@ def discretize(df, separator:float, min=0., max=1.):
         df[c] = df[c].map(lambda x: min if x < separator else max)
     return df
 
+def signaleigenschaften(df, separator:float):
+    disc = discretize(df=df, separator=separator)
+    anzahl = pd.DataFrame()
+    sig = disc.where(disc > 0)
+    sig = pd.DataFrame(sig)
+    anzahl = sig.count()
+    df_step = pd.DataFrame()
+    df_not = pd.DataFrame()
+    for separator in df.columns:
+        df_step[separator] = df[separator].shift(1).ne(df[separator]).where(df[separator] == 1).cumsum()
+        df_not[separator] = df[separator].shift(1).ne(df[separator]).where(df[separator] == -1).cumsum()
+
+    df_desc = pd.DataFrame()
+    df_desc["Zeitraum mit Signal [h]"] = anzahl
+    df_desc["Nicht-Signal-Zeitraum [h]"] = len(df) - anzahl
+    df_desc["Anzahl Signal-Perioden"] = df_step.max()
+    df_desc["Durchschnittliche Dauer Signal [h]"] = (
+                df_desc["Zeitraum mit Signal [h]"] / df_desc["Anzahl Signal-Perioden"])
+    df_desc["Durchschnittliche Dauer Nicht-Signal [h]"] = df_desc["Nicht-Signal-Zeitraum [h]"] / df_desc[
+        "Anzahl Signal-Perioden"]
+
+    return df_desc
+
+#    df_desc = pd.DataFrame()
+ #   df_desc["Zeitraum mit Signal [h]"] = anzahl18[cut]
+  #  df_desc["Nicht-Signal-Zeitraum [h]"] = 8760 - anzahl18[cut]
+   # df_desc["Anzahl Signal-Perioden"] = df18_step.max()
+    #df_desc["Durchschnittliche Dauer Signal [h]"] = (
+     #           desc18["Zeitraum mit Signal [h]"] / desc18["Anzahl Signal-Perioden"])
+    #desc18["Durchschnittliche Dauer Nicht-Signal [h]"] = desc18["Nicht-Signal-Zeitraum [h]"] / desc18[
+     #   "Anzahl Signal-Perioden"]
