@@ -112,29 +112,23 @@ def discretize(df, separator:float, min=0., max=1.):
             df[c] = df[c].map(lambda x: min if x < separator else max)
     return df
 
-def signaleigenschaften(df, separator:float):
-    disc = discretize(df=df, separator=separator)
-    anzahl = pd.DataFrame()
-    sig = disc.where(disc > 0)
-    sig = pd.DataFrame(sig)
-    anzahl = sig.count()
-    df_step = pd.DataFrame()
-    df_not = pd.DataFrame()
-    if type(df) == pd.Series:
-            df_step = df.shift(1).ne(df).where(df == 1).cumsum()
-            df_not = df.shift(1).ne(df).where(df == -1).cumsum()
-    elif type(df) == pd.DataFrame:
-        for separator in df.columns:
-            df_step[separator] = df[separator].shift(1).ne(df[separator]).where(df[separator] == 1).cumsum()
-            df_not[separator] = df[separator].shift(1).ne(df[separator]).where(df[separator] == -1).cumsum()
 
-    df_desc = pd.DataFrame()
-    df_desc["Zeitraum mit Signal [h]"] = anzahl
-    df_desc["Nicht-Signal-Zeitraum [h]"] = len(df) - anzahl
-    df_desc["Anzahl Signal-Perioden"] = df_step.max()
-    df_desc["Durchschnittliche Dauer Signal [h]"] = (
-                df_desc["Zeitraum mit Signal [h]"] / df_desc["Anzahl Signal-Perioden"])
-    df_desc["Durchschnittliche Dauer Nicht-Signal [h]"] = df_desc["Nicht-Signal-Zeitraum [h]"] / df_desc[
-        "Anzahl Signal-Perioden"]
+class Transformation:
+    def __init__(self, kind="Generic", weights=[1,1], timeframe=24):
+        self.kind = kind #type of energy flow
+        self.weights = weights
+        self.timeframe = timeframe
+        self.profile = transform(self.weights, self.timeframe)
 
-    return df_desc
+    def apply(self, timeseries):
+        timeseries_scaled = np.multiply(timeseries, self.profile)
+        ratio = timeseries.sum() / timeseries_scaled.sum()
+        timeseries_scaled = timeseries_scaled * ratio
+        return pd.Series(timeseries_scaled, index=timeseries.index)
+
+    def plot(self, ax):
+        x = np.arange(0, self.timeframe, self.timeframe / len(self.weights))
+        xh = np.arange(0, self.timeframe, 1)
+        ax.plot(x, self.weights, "bo")
+        ax.plot(xh, self.profile[0:self.timeframe], "r")
+

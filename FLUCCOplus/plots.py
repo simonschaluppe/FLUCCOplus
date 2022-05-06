@@ -431,3 +431,5 @@ def signal_bars_w(df, separator:float, ytick_average_max=False, cut_ylim=False, 
         plt.ylim(top=cut_ylim)
     plt.grid(axis="x")
     return fig, ax
+
+
