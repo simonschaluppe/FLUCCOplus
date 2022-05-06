@@ -105,8 +105,11 @@ def discretize(df, separator:float, min=0., max=1.):
     :param max: the resulting value of the area above the separator
     :return: Sparated dataframe with dsicrete values (only min and max)
     """
-    for c in df.columns:
-        df[c] = df[c].map(lambda x: min if x < separator else max)
+    if type(df) == pd.Series:
+            df = df.map(lambda x: min if x < separator else max)
+    elif type(df) == pd.DataFrame:
+        for c in df.columns:
+            df[c] = df[c].map(lambda x: min if x < separator else max)
     return df
 
 def signaleigenschaften(df, separator:float):
@@ -117,9 +120,13 @@ def signaleigenschaften(df, separator:float):
     anzahl = sig.count()
     df_step = pd.DataFrame()
     df_not = pd.DataFrame()
-    for separator in df.columns:
-        df_step[separator] = df[separator].shift(1).ne(df[separator]).where(df[separator] == 1).cumsum()
-        df_not[separator] = df[separator].shift(1).ne(df[separator]).where(df[separator] == -1).cumsum()
+    if type(df) == pd.Series:
+            df_step = df.shift(1).ne(df).where(df == 1).cumsum()
+            df_not = df.shift(1).ne(df).where(df == -1).cumsum()
+    elif type(df) == pd.DataFrame:
+        for separator in df.columns:
+            df_step[separator] = df[separator].shift(1).ne(df[separator]).where(df[separator] == 1).cumsum()
+            df_not[separator] = df[separator].shift(1).ne(df[separator]).where(df[separator] == -1).cumsum()
 
     df_desc = pd.DataFrame()
     df_desc["Zeitraum mit Signal [h]"] = anzahl
@@ -131,12 +138,3 @@ def signaleigenschaften(df, separator:float):
         "Anzahl Signal-Perioden"]
 
     return df_desc
-
-#    df_desc = pd.DataFrame()
- #   df_desc["Zeitraum mit Signal [h]"] = anzahl18[cut]
-  #  df_desc["Nicht-Signal-Zeitraum [h]"] = 8760 - anzahl18[cut]
-   # df_desc["Anzahl Signal-Perioden"] = df18_step.max()
-    #df_desc["Durchschnittliche Dauer Signal [h]"] = (
-     #           desc18["Zeitraum mit Signal [h]"] / desc18["Anzahl Signal-Perioden"])
-    #desc18["Durchschnittliche Dauer Nicht-Signal [h]"] = desc18["Nicht-Signal-Zeitraum [h]"] / desc18[
-     #   "Anzahl Signal-Perioden"]

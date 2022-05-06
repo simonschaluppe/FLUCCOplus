@@ -2,7 +2,8 @@ import pandas as pd
 
 from FLUCCOplus.utils import *
 from FLUCCOplus.notebooks import *
-
+import FLUCCOplus.transform as traffo
+import FLUCCOplus.signal as fps
 from matplotlib.figure import Figure
 
 from dataclasses import dataclass, field, fields
@@ -340,37 +341,38 @@ def heatmap_figure(df, *params, figsize=(12, 6)):
     return fig, ax
 
 
-def pie(df, **params):
+def pie(df, separator:float, **params):
+    import matplotlib.pyplot as plt
 
-    pass
+    if type(df) == pd.Series:
+        fig, ax = plt.subplots(1, 1)
+        ax.set_xlabel = False
+        dftoplot = traffo.signaleigenschaften(df=df, separator=separator)
+        ax.pie([dftoplot["Zeitraum mit Signal [h]"], len(df)], autopct='%1.1f%%', pctdistance=1.7, radius=1.3,
+               startangle=0, colors=["beige", "black"])
+
+    elif type(df) == pd.DataFrame:
+        dftoplot = traffo.signaleigenschaften(df=df, separator=separator)
+        n = len(dftoplot)
+        fig, ax = plt.subplots(n, 1)
+        for i in range(n):
+            ax[i].pie([dftoplot["Zeitraum mit Signal [h]"], len(df)], autopct='%1.1f%%', pctdistance=1.7, radius=1.3,
+                    startangle=0, colors=["beige", "black"])
+    else:
+        raise TypeError(f"df type pd.Series or pd.Dataframe expected (got {type(df)})")
+    return fig, ax
 
 
 
 
-# noch nicht angepasst
-def plot_signal_bars(df, columns, ytick_average_max=False, cut_ylim=False, figsize=True):
+def signal_bars(df, separator:float, ytick_average_max=False, cut_ylim=False, figsize=True):
     """takes a df series, with -1 and +1 denoting OFF and ON signals"""
-    desc_wind = pd.DataFrame()
-    df_step_wind = pd.DataFrame()
-    df_not_wind = pd.DataFrame()
-
-    # fig, ax = plt.subplots()
-    for c in columns:
-        df_step_wind[c] = df[c].shift(1).ne(df[c]).where(df[c] == 1).cumsum()
-        df_not_wind[c] = df[c].shift(1).ne(df[c]).where(df[c] == -1).cumsum()
-    df_step_wind.iloc[0, :] = 0
-    desc_wind["Zeitraum mit Signal [h]"] = df.where(df > 0).sum()
-    desc_wind["Nicht-Signal-Zeitraum [h]"] = len(df) - desc_wind["Zeitraum mit Signal [h]"]
-    desc_wind["Anzahl Signal-Perioden"] = df_step_wind.max()
-    desc_wind["Durchschnittliche Dauer Signal [h]"] = (
-                    desc_wind["Zeitraum mit Signal [h]"] / desc_wind["Anzahl Signal-Perioden"])
-    desc_wind["Durchschnittliche Dauer Nicht-Signal [h]"] = desc_wind["Nicht-Signal-Zeitraum [h]"] / desc_wind[
-            "Anzahl Signal-Perioden"]
+    dftoplot = fps.signal_properties(df=df, separator=separator)
 
     fig, ax = plt.subplots(1, 2, figsize=figsize)
-    desc_wind.loc[columns][["Zeitraum mit Signal [h]", "Nicht-Signal-Zeitraum [h]"]] \
+    dftoplot[["Zeitraum mit Signal [h]", "Nicht-Signal-Zeitraum [h]"]] \
         .plot(kind="bar", color=["cyan", "black"], stacked=True, ax=ax[0]).set(ylabel="Stunden")
-    desc_wind.loc[columns][["Durchschnittliche Dauer Signal [h]", "Durchschnittliche Dauer Nicht-Signal [h]"]] \
+    dftoplot[["Durchschnittliche Dauer Signal [h]", "Durchschnittliche Dauer Nicht-Signal [h]"]] \
         .plot(kind="bar", color=["orange", "grey"], stacked=False, ax=ax[1]).set(ylabel="Stunden")
     for p in ax[0].patches:
         ax[0].annotate("{:.1f}%".format(p.get_height() * 100 / len(df)),
@@ -381,6 +383,50 @@ def plot_signal_bars(df, columns, ytick_average_max=False, cut_ylim=False, figsi
                        va='center', fontsize=7, color='black', xytext=(0, -8), textcoords='offset points')
     if ytick_average_max:
         ax[1].yaxis.set_ticks(np.arange(0, ytick_average_max, 24))  # TODO: as function parameters
+    if cut_ylim:
+        plt.ylim(top=cut_ylim)
+    plt.grid(axis="x")
+    return fig, ax
+
+def signal_bars_s(df, separator:float, ytick_average_max=False, cut_ylim=False, figsize=True):
+    """takes a df series, with -1 and +1 denoting OFF and ON signals"""
+    dftoplot = fps.signal_properties_s(df=df, separator=separator)
+    fig, ax = plt.subplots(1, 2, figsize=figsize)
+    dftoplot[["Zeitraum mit Signal [h]", "Nicht-Signal-Zeitraum [h]"]] \
+        .plot(kind="bar", color=["cyan", "black"], stacked=True, ax=ax[0]).set(ylabel="Stunden")
+    dftoplot[["Durchschnittliche Dauer Signal [h]", "Durchschnittliche Dauer Nicht-Signal [h]"]] \
+        .plot(kind="bar", color=["orange", "grey"], stacked=False, ax=ax[1]).set(ylabel="Stunden")
+    for p in ax[0].patches:
+        ax[0].annotate("{:.1f}%".format(p.get_height() * 100 / len(df)),
+                       (p.get_x() + p.get_width() / 2., p.get_height() + p.get_y() - 5), ha='center', va='center',
+                       fontsize=7, color='black', xytext=(0, -8), textcoords='offset points')
+    for p in ax[1].patches:
+        ax[1].annotate("{:.0f}".format(p.get_height()), (p.get_x() + p.get_width() / 2., p.get_height()), ha='center',
+                       va='center', fontsize=7, color='black', xytext=(0, -8), textcoords='offset points')
+    if ytick_average_max:
+        ax[1].yaxis.set_ticks(np.arange(0, ytick_average_max, 24))
+    if cut_ylim:
+        plt.ylim(top=cut_ylim)
+    plt.grid(axis="x")
+    return fig, ax
+
+def signal_bars_w(df, separator:float, ytick_average_max=False, cut_ylim=False, figsize=True):
+    """takes a df series, with -1 and +1 denoting OFF and ON signals"""
+    dftoplot = fps.signal_properties_w(df=df, separator=separator)
+    fig, ax = plt.subplots(1, 2, figsize=figsize)
+    dftoplot[["Zeitraum mit Signal [h]", "Nicht-Signal-Zeitraum [h]"]] \
+        .plot(kind="bar", color=["cyan", "black"], stacked=True, ax=ax[0]).set(ylabel="Stunden")
+    dftoplot[["Durchschnittliche Dauer Signal [h]", "Durchschnittliche Dauer Nicht-Signal [h]"]] \
+        .plot(kind="bar", color=["orange", "grey"], stacked=False, ax=ax[1]).set(ylabel="Stunden")
+    for p in ax[0].patches:
+        ax[0].annotate("{:.1f}%".format(p.get_height() * 100 / len(df)),
+                       (p.get_x() + p.get_width() / 2., p.get_height() + p.get_y() - 5), ha='center', va='center',
+                       fontsize=7, color='black', xytext=(0, -8), textcoords='offset points')
+    for p in ax[1].patches:
+        ax[1].annotate("{:.0f}".format(p.get_height()), (p.get_x() + p.get_width() / 2., p.get_height()), ha='center',
+                       va='center', fontsize=7, color='black', xytext=(0, -8), textcoords='offset points')
+    if ytick_average_max:
+        ax[1].yaxis.set_ticks(np.arange(0, ytick_average_max, 24))
     if cut_ylim:
         plt.ylim(top=cut_ylim)
     plt.grid(axis="x")
