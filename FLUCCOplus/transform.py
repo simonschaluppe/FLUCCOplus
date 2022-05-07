@@ -132,3 +132,10 @@ class Transformation:
         ax.plot(x, self.weights, "bo")
         ax.plot(xh, self.profile[0:self.timeframe], "r")
 
+
+if __name__ == "__main__":
+    test  = Transformation(weights=[1.,2.,3.,1.],timeframe=24)
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots(1,1)
+    test.plot(ax=ax)
+    fig.show()

@@ -1,9 +1,10 @@
-import pandas as pd
+
 
 from FLUCCOplus.utils import *
 from FLUCCOplus.notebooks import *
 import FLUCCOplus.transform as traffo
-import FLUCCOplus.signal as fps
+import FLUCCOplus.signals as fps
+
 from matplotlib.figure import Figure
 
 from dataclasses import dataclass, field, fields
