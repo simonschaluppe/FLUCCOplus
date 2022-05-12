@@ -5,7 +5,7 @@ from FLUCCOplus.utils import *
 from matplotlib.figure import Figure
 
 
-def zyklusscaler(timeseries, scalefactors: list, zyklus: int) -> pd.Series:
+def zyklusscaler(timeseries:pd.Series, scalefactors: list, zyklus: int) -> pd.Series:
     """
         Transforms a timeseries by the defined scalefactors over the cycle
         param: zyklus: self-defined period. It can be 24 (daily) or 8760 (monthly) hour
@@ -121,20 +121,20 @@ class Transformation:
         self.profile = transform(self.weights, self.timeframe)
 
     def apply(self, timeseries):
-        timeseries_scaled = np.multiply(timeseries, self.profile)
-        ratio = timeseries.sum() / timeseries_scaled.sum()
-        timeseries_scaled = timeseries_scaled * ratio
-        return pd.Series(timeseries_scaled, index=timeseries.index)
+        return zyklusscaler(timeseries, scalefactors=self.weights, zyklus=self.timeframe)
 
-    def plot(self, ax):
+    def plot(self, ax=None, line_color="r"):
+        if ax is None:
+            fig, ax = plt.subplots(1,1)
         x = np.arange(0, self.timeframe, self.timeframe / len(self.weights))
         xh = np.arange(0, self.timeframe, 1)
         ax.plot(x, self.weights, "bo")
-        ax.plot(xh, self.profile[0:self.timeframe], "r")
-
+        ax.plot(xh, self.profile[0:self.timeframe], line_color)
+        ax.set_ylim(0.8*min(self.profile), 1.2*max(self.profile))
+        return ax
 
 if __name__ == "__main__":
-    test  = Transformation(weights=[1.,2.,3.,1.],timeframe=24)
+    test = Transformation(weights=[1.,2.,3.,1.],timeframe=24)
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots(1,1)
     test.plot(ax=ax)

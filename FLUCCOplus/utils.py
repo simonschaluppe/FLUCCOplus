@@ -27,7 +27,7 @@ EM_TO_EXCEL_colnames = {
     "power_production_solar_avg": "Photovoltaik",
     "power_production_hydro_avg": "Laufkraft",
     "total_consumption_avg": "Strombedarf",
-    "total_production_avg": "Stromproduktion",
+    "total_production_avg": "Erzeugung",
     "power_consumption_hydro_discharge_avg": "Pumpspeicher"}
 
 EXCEL_TO_EM_colnames = {v: k for k, v in EM_TO_EXCEL_colnames.items()}

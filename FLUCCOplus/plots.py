@@ -302,7 +302,7 @@ def plot_analyse_WINDfirst(df,
 
 
 
-def heatmap_ax(series, ax, heatmap_args=None, ylabel=None):
+def heatmap_ax(series, ax,  ylabel=None, **heatmap_args):
     from matplotlib.dates import MonthLocator
     from matplotlib.dates import DateFormatter
     df = pd.DataFrame(series)
@@ -319,13 +319,13 @@ def heatmap_ax(series, ax, heatmap_args=None, ylabel=None):
     ax.set_ylabel(ylabel)
     return ax
 
-def heatmap_RG(series, ax, heatmap_args=None):
+def heatmap_RG(series, ax, **heatmap_args):
     #check if cmaps in args
     if heatmap_args is None:
         heatmap_args = {"cmap":"RdYlGn"}
     elif "cmap" not in heatmap_args.keys():
         heatmap_args["cmap"] = "RdYlGn"
-    return heatmap_ax(series, ax, heatmap_args=heatmap_args)
+    return heatmap_ax(series, ax, **heatmap_args)
 
 def heatmap_figure(df, *params, figsize=(12, 6)):
     if type(df) == pd.Series:
@@ -348,12 +348,12 @@ def pie(df, separator:float, **params):
     if type(df) == pd.Series:
         fig, ax = plt.subplots(1, 1)
         ax.set_xlabel = False
-        dftoplot = traffo.signaleigenschaften(df=df, separator=separator)
+        dftoplot = fps.signal_properties(df=df, separator=separator)
         ax.pie([dftoplot["Zeitraum mit Signal [h]"], len(df)], autopct='%1.1f%%', pctdistance=1.7, radius=1.3,
                startangle=0, colors=["beige", "black"])
 
     elif type(df) == pd.DataFrame:
-        dftoplot = traffo.signaleigenschaften(df=df, separator=separator)
+        dftoplot = fps.signal_properties(df=df, separator=separator)
         n = len(dftoplot)
         fig, ax = plt.subplots(n, 1)
         for i in range(n):
@@ -394,7 +394,8 @@ def signal_bars_s(df, separator:float, ytick_average_max=False, cut_ylim=False, 
     dftoplot = fps.signal_properties_s(df=df, separator=separator)
     fig, ax = plt.subplots(1, 2, figsize=figsize)
     dftoplot[["Zeitraum mit Signal [h]", "Nicht-Signal-Zeitraum [h]"]] \
-        .plot(kind="bar", color=["cyan", "black"], stacked=True, ax=ax[0]).set(ylabel="Stunden")
+        .plot(kind="bar", color=["cyan", "black"], stacked=True, ax=ax[0])\
+        .set(ylabel="Stunden")
     dftoplot[["Durchschnittliche Dauer Signal [h]", "Durchschnittliche Dauer Nicht-Signal [h]"]] \
         .plot(kind="bar", color=["orange", "grey"], stacked=False, ax=ax[1]).set(ylabel="Stunden")
     for p in ax[0].patches:

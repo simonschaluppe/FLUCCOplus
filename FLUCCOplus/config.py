@@ -20,6 +20,8 @@ DATA_EXTERNAL = Path("../data/external")
 DATA_INTERIM = Path("../data/interim")
 DATA_PROCESSED = Path("../data/processed")
 
+PLOTS = Path("../data/Plots")
+
 SAVE_CSV_FORMAT = {
     "sep": ";",
     "decimal": ",",
@@ -34,7 +36,9 @@ COLORS = {
     'Photovoltaik': "orange",
     'Pumpspeicher': "lightblue",
     'Nicht-Volatile': "darkgrey",
-    "Strombedarf": "black"
+    "Strombedarf": "black",
+    "Volatile EE": "green",
+    "Erzeugung": "grey"
 }
 
 # Debuggung

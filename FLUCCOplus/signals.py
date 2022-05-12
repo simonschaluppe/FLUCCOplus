@@ -38,6 +38,7 @@ def load_pypsa_avg(year=None):
     return df
 
 
+
 def signal_properties(df, separator:float):
     disc = traffo.discretize(df=df, separator=separator)
     anzahl = pd.DataFrame()
@@ -47,8 +48,8 @@ def signal_properties(df, separator:float):
     df_step = pd.DataFrame()
     df_not = pd.DataFrame()
     if type(df) == pd.Series:
-            df_step = df.shift(1).ne(df).where(df == 1).cumsum()
-            df_not = df.shift(1).ne(df).where(df == -1).cumsum()
+            df_step = df.shift(1).ne(df).where(df == df.max()).cumsum()
+            df_not = df.shift(1).ne(df).where(df == df.min()).cumsum()
     elif type(df) == pd.DataFrame:
         for separator in df.columns:
             df_step[separator] = df[separator].shift(1).ne(df[separator]).where(df[separator] == 1).cumsum()
@@ -86,10 +87,10 @@ def signal_properties_s(df, separator:float):
     df_not_w = pd.DataFrame()
 
     if type(df) == pd.Series:
-            df_step_s = df_s.shift(1).ne(df_s).where(df_s == 1).cumsum()
-            df_not_s = df_s.shift(1).ne(df_s).where(df_s == -1).cumsum()
-            df_step_w = df_w.shift(1).ne(df_w).where(df_w == 1).cumsum()
-            df_not_w = df_w.shift(1).ne(df_w).where(df_w == -1).cumsum()
+            df_step_s = df_s.shift(1).ne(df_s).where(df_s == df_s.max()).cumsum()
+            df_not_s = df_s.shift(1).ne(df_s).where(df_s == df_s.min()).cumsum()
+            df_step_w = df_w.shift(1).ne(df_w).where(df_w == df_w.max()).cumsum()
+            df_not_w = df_w.shift(1).ne(df_w).where(df_w == df_w.min()).cumsum()
     elif type(df) == pd.DataFrame:
         for s in df.columns:
             df_step_s[s] = df_s[s].shift(1).ne(df_s[s]).where(df_s[s] == 1).cumsum()
@@ -114,7 +115,7 @@ def signal_properties_s(df, separator:float):
     df_desc_w["Durchschnittliche Dauer Nicht-Signal [h]"] = df_desc_w["Nicht-Signal-Zeitraum [h]"] / df_desc_w[
         "Anzahl Signal-Perioden"]
 
-    return df_desc_s
+    return df_desc_s, df_desc_w
 
 def signal_properties_w(df, separator:float):
     disc = traffo.discretize(df=df, separator=separator)
