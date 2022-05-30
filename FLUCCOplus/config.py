@@ -38,7 +38,7 @@ COLORS = {
     'Nicht-Volatile': "darkgrey",
     "Strombedarf": "black",
     "Volatile EE": "green",
-    "Erzeugung": "grey"
+    "Erzeugung": "green"
 }
 
 # Debuggung

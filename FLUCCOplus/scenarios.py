@@ -221,6 +221,18 @@ class Scenario:
         self.TSD = self.TSD/1000
 
     @property
+    def demand_supply(self):
+        return self.TSD[self.scalable]
+
+    @property
+    def demand(self):
+        return self.TSD["Strombedarf"]
+
+    @property
+    def supplies(self):
+        return self.TSD[self.scalable].drop("Strombedarf", axis=1)
+
+    @property
     def RES(self):
         """returns the REsidualload from Volatiles (RES0) or from all renewables (RES1) as timeseries"""
         return self.TSD[self.res_column]
@@ -301,6 +313,28 @@ class Scenario:
         # fig.tight_layout()
         return fig, [ax1,ax2,ax3,ax4]
 
+    def plot_energy_mix(self):
+        fig, ax = plt.subplots(1,3, figsize=(15,5), sharey=True,
+                               gridspec_kw={'width_ratios':[4,1,1]})
+
+        fpp.plot_annual_w_seasonal_detail(
+            df=self.supplies,
+            fig=fig, ax=ax,
+            legend=True,
+            stacked=True,
+            kind="area",
+            color=config.COLORS
+        )
+        fpp.plot_annual_w_seasonal_detail(
+            df=self.demand,
+            fig=fig, ax=ax,
+            legend=True,
+            stacked=False,
+            color=config.COLORS,
+        )
+
+        return fig, ax
+
     def plot_signal(self, ax=None, legend=True):
         """plots heatmap, #of signal hours and average time
         for current signal in a row"""
@@ -356,19 +390,19 @@ class Scenario:
         ax = fpp.heatmap_ax(series=series, ax=ax, **heatmap_args)
         return ax
 
-    def plot_supplydemand(self, ax, hourly=False, daily=False, weekly=True, monthly=False):
+    def plot_supplydemand(self, ax, hourly=False, daily=False, weekly=False, monthly=False, **kwargs):
         """generic annual supply demand plot with configurable time aggregation"""
-        columns = ["Strombedarf", "Volatile EE"]
+        columns = ["Strombedarf", "Erzeugung"]
 
         for c in columns:
             if hourly:
-                self.TSD[c].plot(ax=ax, color=config.COLORS[c], marker='.', alpha=0.2, linestyle='None', legend=False)
+                self.TSD[c].plot(ax=ax, color=config.COLORS[c], marker='.', alpha=0.2, linestyle='None', legend=False, **kwargs)
             if daily:
-                self.daily_mean[c].plot(ax=ax, color=config.COLORS[c], linewidth=0.5, alpha=0.5)
+                self.daily_mean[c].plot(ax=ax, color=config.COLORS[c], linewidth=0.5, alpha=0.5, **kwargs)
             if weekly:
-                self.weekly_mean[c].plot(ax=ax, color=config.COLORS[c], linewidth=1.5, alpha=0.8)
+                self.weekly_mean[c].plot(ax=ax, color=config.COLORS[c], linewidth=1.5, alpha=0.8, **kwargs)
             if monthly:
-                self.monthly_mean[c].plot(ax=ax, color=config.COLORS[c], linewidth=2.5, alpha=1, drawstyle="steps")
+                self.monthly_mean[c].plot(ax=ax, color=config.COLORS[c], linewidth=2.5, alpha=1, drawstyle="steps", **kwargs)
 
         # self.weekly_mean["Strombedarf"].plot(color="black", linewidth=1.5, ax=ax)
         # self.weekly_mean["Volatile EE"].plot(color="green", linewidth=1.5, ax=ax)
@@ -377,6 +411,7 @@ class Scenario:
         # ax.set_xlabel("")
 
         ax.set_ylabel("GW")
+
         ax.set_xlim(self.TSD.index[0], self.TSD.index[-1])
         return ax
 

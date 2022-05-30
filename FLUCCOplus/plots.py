@@ -1,4 +1,4 @@
-
+import pandas as pd
 
 from FLUCCOplus.utils import *
 from FLUCCOplus.notebooks import *
@@ -126,6 +126,18 @@ def plot_HDW(df,
       #  monthsFmt = DateFormatter("%b")
        # ax[i].xaxis.set_major_locator(months)
         #ax[i].xaxis.set_major_formatter(monthsFmt)
+
+def plot_annual_w_seasonal_detail(df: pd.DataFrame, fig=None, ax=None, week1=3, week2=30, legend=False, **pdplotargs):
+    """plots all columns of a dataframe hourly over the year, anda week in winter and summer,
+    given a figure with 3 ax es"""
+    if fig is None or ax is None:
+        fig, ax = plt.subplots(1,3, figsize=(15,5), gridspec_kw={'width_ratios':[4,1,1]})
+
+    df.plot(ax=ax[0], legend=legend, **pdplotargs)
+    df[df.index.isocalendar().week==week1].plot(ax=ax[1], legend=False, **pdplotargs)
+    df[df.index.isocalendar().week==week2].plot(ax=ax[2], legend=False, **pdplotargs)
+
+    return fig, ax
 
 
 

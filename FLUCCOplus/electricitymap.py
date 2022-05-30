@@ -194,7 +194,7 @@ def start_pipeline(df):
     return df.copy()
 
 def fill_values(df):
-    return df.ffill()
+    return df.fillna(value=df.mean())
 
 @logg
 def clean151617(df):
