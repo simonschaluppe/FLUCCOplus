@@ -1,3 +1,4 @@
+import pandas as pd
 
 import FLUCCOplus.config as config
 import FLUCCOplus.transform as traffo
@@ -120,6 +121,9 @@ def factors(source, target, scenarios):
 
     return factors
 
+class Comparison:
+    def __init__(self, scenario1, scenario2):
+
 
 class Scenario:
     "represents an Electricity SCenario with variable scaling of energy carrieres and demands, and transformations "
@@ -147,6 +151,9 @@ class Scenario:
             self.apply(self.transformations)
 
         self.res_column = "RES1"
+        #"RES0" =  Volatile EE (laufkraft, Wind, PV) - Strombedarf
+        #"RES1" =  Volatile EE (laufkraft, Wind, PV) - Strombedarf - pumpspeicher
+        #"RES2" =  Volatile EE (laufkraft, Wind, PV) - Strombedarf - pumpspeicher - nicht-volatile (biomasse, )
         self.signal_column = "RES1"
         self.signal_separator = 0.5
         self.define_signal()
