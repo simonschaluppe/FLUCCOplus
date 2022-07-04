@@ -196,6 +196,9 @@ def start_pipeline(df):
 def fill_values(df):
     return df.resample('H').ffill()
 
+def del_lastday(df):
+    return df.iloc[:8760]
+
 @logg
 def clean151617(df):
     """returns a clean em df 15-17"""
@@ -253,6 +256,20 @@ def calc_aggregates(df):
     df["Nicht-Volatile"] = df["Stromproduktion"] - df["Wasserkraft"] - df["Windkraft"] - df["Photovoltaik"]
     return df
 
+@log
+def fetch_20():
+    """
+    returns the cleaned elmap dataset from 2018 and 2019:
+    :return:
+    """
+    return (_read_raw("../data/raw/electricityMap/AT_2020.csv")
+
+            .pipe(start_pipeline)
+            .drop(header_junk, axis=1)
+            .pipe(fill_values)
+            .pipe(del_lastday)
+            .astype(float)
+            )
 
 @log
 def fetch_1819():
@@ -305,10 +322,12 @@ def fetch_common():
 @log
 def fetch(year=None, common=False):
     if year:
-        if year >= 2018:
+        if 2019 >= year >= 2018:
             df = fetch_1819()
         elif 2015 <= year <= 2017:
             df = fetch_151617()
+        elif 2020:
+            df = fetch_20()
         return df[df.index.year == year]
 
     elif common:
