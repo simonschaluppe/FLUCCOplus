@@ -196,8 +196,8 @@ def start_pipeline(df):
 def fill_values(df):
     return df.resample('H').ffill()
 
-def del_lastday(df):
-    return df.iloc[:8760]
+def del_29febr(df):
+    return df.drop(df.index[1416:1440])
 
 @logg
 def clean151617(df):
@@ -267,7 +267,7 @@ def fetch_20():
             .pipe(start_pipeline)
             .drop(header_junk, axis=1)
             .pipe(fill_values)
-            .pipe(del_lastday)
+            .pipe(del_29febr)
             .astype(float)
             )
 

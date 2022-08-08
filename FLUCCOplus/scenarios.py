@@ -5,7 +5,7 @@ import FLUCCOplus.transform as traffo
 import FLUCCOplus.plots as fpp
 import FLUCCOplus.signals as fps
 import matplotlib.pyplot as plt
-import utils
+#import utils
 from FLUCCOplus.utils import *
 
 from enum import Enum
@@ -121,8 +121,8 @@ def factors(source, target, scenarios):
 
     return factors
 
-class Comparison:
-    def __init__(self, scenario1, scenario2):
+#class Comparison:
+ #   def __init__(self, scenario1, scenario2):
 
 
 class Scenario:
