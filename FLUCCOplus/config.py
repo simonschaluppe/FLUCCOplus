@@ -41,6 +41,20 @@ COLORS = {
     "Erzeugung": "green"
 }
 
+ENERGIES = {
+    "Strombedarf": {
+        "de": "Strombedarf",
+        "en": "Electricity Demand",
+        "color": "black"
+    },
+    "Laufkraft": {
+        "de": "Laufkraft",
+        "en": "Run of river",
+        "color": "blue"
+    }
+    #TODO: Rest
+}
+
 # Debuggung
 
 if VERBOSE:

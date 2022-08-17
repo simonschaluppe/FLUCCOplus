@@ -131,16 +131,19 @@ class Scenario:
     def __init__(self, name, scenario, em_base=None, transformation_scenario=None):
         self.name = name
         scenarios = all()
+        # Annual Energy (Sums)
         self.annuals = scenarios[scenarios.index==name].transpose().rename(columns={self.name: "target"})
 
         self.scalable = ["Strombedarf", "Pumpspeicher", "Laufkraft", "Windkraft", "Photovoltaik"]
         self.excel_em_prods =  {EXCEL_TO_EM_colnames[k]:k for k in self.scalable}
         self.excel_em_cons = {k.replace("production", "consumption"):v for k,v in self.excel_em_prods.items()}
 
+        # Basis Stundenprofile
         self.base_df = pd.DataFrame()
         self.base_year = None
         self.load_base(em_base)
 
+        # Actual Time-Step-Data of the Scenario
         self.TSD = pd.DataFrame() # the current time step data of the scenario
         self.reset()
 
@@ -155,6 +158,8 @@ class Scenario:
         #"RES1" =  Volatile EE (laufkraft, Wind, PV) - Strombedarf - pumpspeicher
         #"RES2" =  Volatile EE (laufkraft, Wind, PV) - Strombedarf - pumpspeicher - nicht-volatile (biomasse, )
         self.signal_column = "RES1"
+        #TODO: use a Signal Class instead
+        # self.signal = FLUCCOplus.Signal(source=self.TSD["RES1"], method=["cutoff","rolling average" )
         self.signal_separator = 0.5
         self.define_signal()
 
@@ -258,7 +263,7 @@ class Scenario:
         return self.RES[summer_mask].mean() / self.RES.mean()
 
     @property
-    def signal(self):
+    def signal(self) -> pd.Series: #TODO:  -> FLUCCOplus.Signal
         """Signal: 'scenario.signal_column' TSD mit scenario.signal_separator diskretisiert """
         n = traffo.normalize(pd.DataFrame(self.TSD[self.signal_column], index=self.RES.index))
         d = traffo.discretize(n, separator=self.signal_separator)
@@ -284,7 +289,6 @@ class Scenario:
         props = sig_w.append(sig_s)
         props.index = ["Winter", "Sommer"]
         return props
-
 
     @property
     def em_excel(self):
@@ -397,19 +401,22 @@ class Scenario:
         ax = fpp.heatmap_ax(series=series, ax=ax, **heatmap_args)
         return ax
 
-    def plot_supplydemand(self, ax, hourly=False, daily=False, weekly=False, monthly=False, **kwargs):
+    def plot_supplydemand(self, ax, hourly=False, daily=False, weekly=False, monthly=False, lang="de", **kwargs):
         """generic annual supply demand plot with configurable time aggregation"""
-        columns = ["Strombedarf", "Erzeugung"]
+        columns = ["Strombedarf", "Erzeugung"] #internal name der config.ENERGIES entries
 
+        #set language
         for c in columns:
+            #TODO: config.ENERGIES[c][lang]
+            color = config.ENERGIES[c]["color"]
             if hourly:
-                self.TSD[c].plot(ax=ax, color=config.COLORS[c], marker='.', alpha=0.2, linestyle='None', legend=False, **kwargs)
+                self.TSD[c].plot(ax=ax, color=color, marker='.', alpha=0.2, linestyle='None', legend=False, **kwargs)
             if daily:
-                self.daily_mean[c].plot(ax=ax, color=config.COLORS[c], linewidth=0.5, alpha=0.5, **kwargs)
+                self.daily_mean[c].plot(ax=ax, color=color, linewidth=0.5, alpha=0.5, **kwargs)
             if weekly:
-                self.weekly_mean[c].plot(ax=ax, color=config.COLORS[c], linewidth=1.5, alpha=0.8, **kwargs)
+                self.weekly_mean[c].plot(ax=ax, color=color, linewidth=1.5, alpha=0.8, **kwargs)
             if monthly:
-                self.monthly_mean[c].plot(ax=ax, color=config.COLORS[c], linewidth=2.5, alpha=1, drawstyle="steps", **kwargs)
+                self.monthly_mean[c].plot(ax=ax, color=color, linewidth=2.5, alpha=1, drawstyle="steps", **kwargs)
 
         # self.weekly_mean["Strombedarf"].plot(color="black", linewidth=1.5, ax=ax)
         # self.weekly_mean["Volatile EE"].plot(color="green", linewidth=1.5, ax=ax)
@@ -420,6 +427,8 @@ class Scenario:
         ax.set_ylabel("GW")
 
         ax.set_xlim(self.TSD.index[0], self.TSD.index[-1])
+
+        #reset language
         return ax
 
     def plot_monthly_mismatch(self, ax=None, hourly=False, daily=False, weekly=True, monthly=True):

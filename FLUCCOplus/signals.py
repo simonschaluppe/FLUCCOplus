@@ -38,6 +38,12 @@ def load_pypsa_avg(year=None):
     return df
 
 
+#TODO: class Signal:
+    #TODO: Series # has timestamps, has a "signal" hat eine "bedeutung
+
+    #have specific plotting and analytic functions
+    #heatmap, signal bars
+
 
 def signal_properties(df, separator:float):
     disc = traffo.discretize(df=df, separator=separator)
