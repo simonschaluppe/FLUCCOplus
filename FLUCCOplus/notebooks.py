@@ -6,7 +6,7 @@ import os
 import seaborn as sns
 sns.set_style("whitegrid")
 
-sns.set_context("talk",
+sns.set_context("paper",
                 font_scale=1.,
                 rc={"lines.linewidth": 1.7})
 

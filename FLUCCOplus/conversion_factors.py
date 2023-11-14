@@ -216,7 +216,16 @@ CONVERSION_FACTORS = {'Atomkraftwerk': {'Primärenergiefaktor total [MJ-eq]': 4.
   'Primärenergiefaktor Abwärme / Abfall [MJ-eq]': 0.0,
   'CO2-Äquivalente  [kg CO2-eq]': 0.146,
   'Kohlendioxid, fossil [kg CO2-eq]': 0.136,
-  "Umweltbelastungspunkte [UBP'13]": 152.2}}
+  "Umweltbelastungspunkte [UBP'13]": 152.2},
+  'OIB RL-E 19 Liefermix': {'Primärenergiefaktor total [MJ-eq]': 1.62,
+  'Primärenergiefaktor fossil [MJ-eq]': 1.02,
+  'Primärenergiefaktor nuklear  [MJ-eq]': 0.0,
+  'Primärenergiefaktor total erneuerbar [MJ-eq]': 0.61,
+  'Primärenergiefaktor Abwärme / Abfall [MJ-eq]': 0.0,
+  'CO2-Äquivalente  [kg CO2-eq]': 0.227,
+  'Kohlendioxid, fossil [kg CO2-eq]': 0.227,
+  "Umweltbelastungspunkte [UBP'13]": 0}}
+
 
 conversion_mapping = {
     "biomass": "Heizkraftwerk Holz",
@@ -225,12 +234,12 @@ conversion_mapping = {
     "wind": "Windkraft",
     "geothermal": "Heizkraftwerk Geothermie",
     "coal": "Braunkohlekraftwerk (Dampf)",
-    "gas": "Blockheizkraftwerk Gas",
+    "gas": "Erdgaskombikraftwerk GuD",
     "nuclear": "Atomkraftwerk",
-    "oil": "Kraftwerk Schweröl",
+    "oil": "Blockheizkraftwerk Diesel",
     "unknown": "ENTSO-E-Mix",
     "battery_discharge": "ENTSO-E-Mix",
-    "hydro_discharge": "Pumpspeicherung"
+    "hydro_discharge": "OIB RL-E 19 Liefermix"
 }
 
 conversion_columns = [

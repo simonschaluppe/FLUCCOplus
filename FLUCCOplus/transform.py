@@ -1,9 +1,8 @@
 import numpy as np
 import pandas as pd
 from sklearn import preprocessing
-from FLUCCOplus.utils import *
+#from utils import *
 from matplotlib.figure import Figure
-
 
 def zyklusscaler(timeseries:pd.Series, scalefactors: list, zyklus: int) -> pd.Series:
     """
@@ -114,16 +113,18 @@ def discretize(df, separator:float, min=0., max=1.):
 
 
 class Transformation:
-    def __init__(self, kind="Generic", weights=[1,1], timeframe=24):
+    def __init__(self, kind="Generic", weights=[1,1], timeframe=24, normalize=False):
         self.kind = kind #type of energy flow
         self.weights = weights
         self.timeframe = timeframe
         self.profile = transform(self.weights, self.timeframe)
+        if normalize:
+            self.profile = self.profile/self.profile.sum()*8760
 
     def apply(self, timeseries):
         return zyklusscaler(timeseries, scalefactors=self.weights, zyklus=self.timeframe)
 
-    def plot(self, ax=None, line_color="r"):
+    def _plot(self, ax=None, line_color="r"):
         if ax is None:
             fig, ax = plt.subplots(1,1)
         x = np.arange(0, self.timeframe, self.timeframe / len(self.weights))
@@ -132,10 +133,23 @@ class Transformation:
         ax.plot(xh, self.profile[0:self.timeframe], line_color)
         ax.set_ylim(0.8*min(self.profile), 1.2*max(self.profile))
         return ax
+    
+    def plot(self, ax=None):
+        if ax is None:
+            import matplotlib.pyplot as plt
+            fig, ax = plt.subplots(1,2)
+        x_d = np.arange(0, 24, 1)
+        x_w = np.arange(0, 144, 1)
+        x_y = np.arange(0, 8760, 1)
+        ax[0].plot(x_d, self.profile[0:24])
+        ax[1].plot(x_y, self.profile, linewidth=0.3)
+        [axe.set_ylim(0.8*min(self.profile), 1.2*max(self.profile)) for axe in ax]
+        fig.show()
+        return ax
 
 if __name__ == "__main__":
-    test = Transformation(weights=[1.,2.,3.,1.],timeframe=24)
+    test = Transformation(weights=[1.,2.,3.,1.],timeframe=24, normalize=True)
     import matplotlib.pyplot as plt
-    fig, ax = plt.subplots(1,1)
-    test.plot(ax=ax)
-    fig.show()
+    test.plot()
+    
+    
