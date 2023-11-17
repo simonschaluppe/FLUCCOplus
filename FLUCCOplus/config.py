@@ -48,11 +48,40 @@ ENERGIES = {
         "color": "black"
     },
     "Laufkraft": {
-        "de": "Laufkraft",
-        "en": "Run of river",
+        "de": "Wasser-Laufkraft",
+        "en": "Hydro (ROR)",
         "color": "blue"
-    }
-    #TODO: Rest
+    },
+    "Windkraft": {
+        "de": "Windkraft",
+        "en": "Wind Power",
+        "color": "cyan"
+    },
+    "Photovoltaik": {
+        "de": "Photovoltaik",
+        "en": "Photovoltaics",
+        "color": "orange"
+    },
+    "Pumpspeicher": {
+        "de": "Wasserkraft-Pumpspeicher",
+        "en": "Hydro (Pumped)",
+        "color": "lightblue"
+    },
+    "Nicht-Volatile": {
+        "de": "Nicht-Volatile",
+        "en": "Non-Volatile RES",
+        "color": "darkgrey"
+    },
+    "Volatile EE": {
+        "de": "Volatile EE (Wind, Wasser, PV)",
+        "en": "Volatile RES (Wind, Hydro, PV)",
+        "color": "green"
+    },
+    "Erzeugung": {
+        "de": "Erzeugung",
+        "en": "Production",
+        "color": "green"
+    },
 }
 
 # Debuggung
