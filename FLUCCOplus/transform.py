@@ -43,7 +43,7 @@ def transform(support_points: list, hour_scale: int = 8760):
 
     scaler = np.fft.irfft(padded_sum) * h / N  # for given hour timescale
     reps = int(
-        np.ceil(9000 / h))  # how often does the signal repeat in a year(9000 instead of 8760 to account for rounding
+        np.ceil(10000 / h))  # how often does the signal repeat in a year(9000 instead of 8760 to account for rounding
 
     return np.concatenate([scaler] * reps)[:8760]  # copies the signal reps times and returns only the full year
 
@@ -134,22 +134,62 @@ class Transformation:
         ax.set_ylim(0.8*min(self.profile), 1.2*max(self.profile))
         return ax
     
-    def plot(self, ax=None):
+    def plot(self, ax=None, line_color="r", weights=False):
+        import matplotlib.pyplot as plt 
+        import matplotlib.patches as patches
         if ax is None:
-            import matplotlib.pyplot as plt
-            fig, ax = plt.subplots(1,2)
+            fig, ax = plt.subplots(1,3, figsize=(8,1), sharey=True, layout="tight", gridspec_kw={'width_ratios':[1,1,4]})
+
+
+         #weights
+        x_w = np.arange(0, self.timeframe, self.timeframe / len(self.weights))
+        if self.timeframe ==24:
+            axw = ax[0]
+            fs=6
+        elif self.timeframe == 168:
+            axw = ax[1]
+            fs=6
+        elif self.timeframe == 8760:
+            axw = ax[2]
+            fs=9
+        else:
+            axw = None
+        if axw:
+            axw.plot(x_w, self.weights, color="black", marker="o", linestyle="None",alpha=0.7)
+            if weights:
+                axw.text(-1,0,f"weights:\n{self.weights}", fontsize=fs)
+
         x_d = np.arange(0, 24, 1)
-        x_w = np.arange(0, 144, 1)
+        x_w = np.arange(0, 168, 1)
         x_y = np.arange(0, 8760, 1)
-        ax[0].plot(x_d, self.profile[0:24])
-        ax[1].plot(x_y, self.profile, linewidth=0.3)
-        [axe.set_ylim(0.8*min(self.profile), 1.2*max(self.profile)) for axe in ax]
-        fig.show()
+        ax[0].plot(x_d, self.profile[0:24], color=line_color)
+
+        
+        # Color all spines red
+        for spine in ax[0].spines.values():
+            spine.set_color('red')
+            ax[0].set_xlim(0, 24)
+            ax[0].set_ylim(0,2)
+        ax[1].plot(x_w, self.profile[0:168], linewidth=0.6, color=line_color)
+        for spine in ax[1].spines.values():
+            spine.set_color('blue')
+            ax[1].set_xlim(0, 168)
+            ax[1].set_ylim(0,2)
+        ax[2].plot(x_y, self.profile, linewidth=0.3, color=line_color)
+        rectangle = patches.Rectangle((168,0.025), 168,1.95, edgecolor='blue', facecolor='none')
+        ax[2].add_patch(rectangle)
+        rectangle = patches.Rectangle((24,0.025), 24,1.95, edgecolor='red', facecolor='none')
+        ax[2].add_patch(rectangle)
+        ax[2].set_xlim(0, 8760)
+        ax[2].set_ylim(0,2)
+
+       #[axe.set_ylim(0.8*min(self.profile), 1.2*max(self.profile)) for axe in ax]
         return ax
 
 if __name__ == "__main__":
-    test = Transformation(weights=[1.,2.,3.,1.],timeframe=24, normalize=True)
+    test = Transformation(weights=[1.,2.,2.2,1.],timeframe=168, normalize=True)
     import matplotlib.pyplot as plt
     test.plot()
+
     
     
