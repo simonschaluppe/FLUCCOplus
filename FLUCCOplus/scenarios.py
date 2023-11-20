@@ -5,6 +5,7 @@ import FLUCCOplus.transform as traffo
 import FLUCCOplus.plots as fpp
 import FLUCCOplus.signals as fps
 import matplotlib.pyplot as plt
+import FLUCCOplus.electricitymap as elmap
 #import utils
 from FLUCCOplus.utils import *
 
@@ -26,6 +27,13 @@ class Names:
     flucco_2050 = "100% Erneuerbare Deckung 2050 inkl Methan (FLUCCO+)"
     flucco_2050_vol = "100% Erneuerbare Deckung 2050 ohne Speicherausbau (FLUCCO+)"
 
+def get_scenario_names():
+    l = []
+    for k,v in Names.__dict__.items():
+        l.append(v)
+    return l[4:-3] # whacky hack, only works if Names do not change
+
+scenario_names_list = get_scenario_names()
 
 @log
 def read(path):
@@ -128,7 +136,7 @@ def factors(source, target, scenarios):
 class Scenario:
     "represents an Electricity SCenario with variable scaling of energy carrieres and demands, and transformations "
 
-    def __init__(self, name, scenario, em_base=None, transformation_scenario=None):
+    def __init__(self, name, scenario=None, em_base=None, transformation_scenario=None):
         self.name = name
         scenarios = all()
         # Annual Energy (Sums)
@@ -140,9 +148,17 @@ class Scenario:
 
         # Basis Stundenprofile
         self.base_df = pd.DataFrame()
-        self.base_year = None
-        self.load_base(em_base)
-
+        if type(em_base) is dict:
+            self.base_year = None
+            self.load_base(em_base)
+        elif type(em_base) is int:
+            self.base_year = em_base
+            self.load_base({
+                "year": em_base,
+                "df": elmap.fetch(year=em_base)
+                })
+        else:
+            raise ValueError(f"em_base needs to be dict or int of year, got {em_base}")
         # Actual Time-Step-Data of the Scenario
         self.TSD = pd.DataFrame() # the current time step data of the scenario
         self.reset()
@@ -160,7 +176,7 @@ class Scenario:
         self.signal_column = "RES1"
         #TODO: use a Signal Class instead
         # self.signal = FLUCCOplus.Signal(source=self.TSD["RES1"], method=["cutoff","rolling average" )
-        self.signal_separator = 0.5
+        self.signal_separator = 0.
         self.define_signal()
 
         self.winter = ((self.RES.index.month <= 3) | (self.RES.index.month >= 10))
@@ -265,7 +281,8 @@ class Scenario:
     @property
     def signal(self) -> pd.Series: #TODO:  -> FLUCCOplus.Signal
         """Signal: 'scenario.signal_column' TSD mit scenario.signal_separator diskretisiert """
-        n = traffo.normalize(pd.DataFrame(self.TSD[self.signal_column], index=self.RES.index))
+        n = pd.DataFrame(self.TSD[self.signal_column], index=self.RES.index)
+        #n = traffo.normalize(n)
         d = traffo.discretize(n, separator=self.signal_separator)
         return d[self.signal_column]
 
@@ -305,7 +322,7 @@ class Scenario:
         """plots the scenario volatile RE and demand as well as the resulting residual load tsd"""
         # fig, ax = plt.subplots(2, 1, figsize=(15, 10))
 
-        fig = plt.figure(figsize=(15,10))
+        fig = plt.figure(figsize=(12,6))
         fig.suptitle(f"Scenario {self.name}")
         ax1 = fig.add_subplot(4,1,1)
         ax2 = fig.add_subplot(4,1,2, sharex=ax1)
@@ -325,8 +342,8 @@ class Scenario:
         return fig, [ax1,ax2,ax3,ax4]
 
     def plot_energy_mix(self):
-        fig, ax = plt.subplots(1,3, figsize=(15,5), sharey=True,
-                               gridspec_kw={'width_ratios':[4,1,1]})
+        fig, ax = plt.subplots(1,3, figsize=(12,4), sharey=True,
+                               gridspec_kw={'width_ratios':[4,1,1]}, layout="tight")
 
         fpp.plot_annual_w_seasonal_detail(
             df=self.supplies,
@@ -334,7 +351,7 @@ class Scenario:
             legend=True,
             stacked=True,
             kind="area",
-            color=config.COLORS
+            color=config.COLORS, linewidth=0
         )
         fpp.plot_annual_w_seasonal_detail(
             df=self.demand,
@@ -343,35 +360,41 @@ class Scenario:
             stacked=False,
             color=config.COLORS,
         )
-
+        ax[0].set_ylabel("GW")
         return fig, ax
 
     def plot_signal(self, ax=None, legend=True):
         """plots heatmap, #of signal hours and average time
         for current signal in a row"""
         if ax is None:
-            fig, ax = plt.subplots(1,3, figsize=(15,5), gridspec_kw={'width_ratios':[4,1,1]})
+            fig, ax = plt.subplots(1,3, figsize=(12,2), gridspec_kw={'width_ratios':[4,1,1]})
 
-        self.plot_heatmap(self.signal, ax=ax[0], cbar=False, cmap="bone")
+        from matplotlib.colors import LinearSegmentedColormap
+
+        # Create a custom colormap
+        colors = [(0, 0, 0), (0, 1, 1)]  # Black to Cyan
+        cmap_name = 'custom_colormap'
+        custom_cmap = LinearSegmentedColormap.from_list(cmap_name, colors, N=256)
+        self.plot_heatmap(self.signal, ax=ax[0], cbar=False, cmap=custom_cmap)
         self.signal_props_summerwinter[["Zeitraum mit Signal [h]", "Nicht-Signal-Zeitraum [h]"]] \
-            .plot(ax=ax[1], kind="bar", color=["Yellowgreen", "Purple"],stacked=True, legend=False) \
+            .plot(ax=ax[1], kind="bar", color=[ "#00FFFF", "#000000"],stacked=True, legend=False) \
             .set(ylabel="Stunden")
 
         for p in ax[1].patches:
             ax[1].annotate("{:.0f}".format(p.get_height()),
                            (p.get_x() + p.get_width() / 2., p.get_height() + p.get_y() - 5), ha='center', va='center',
-                           fontsize=17, color='black', xytext=(0, -8), textcoords='offset points')
+                           fontsize=12, color='black', xytext=(0, -8), textcoords='offset points')
 
         ax[1].yaxis.set_ticks(np.arange(0, 6000, 24*30))
 
 
         self.signal_props_summerwinter[["Durchschnittliche Dauer Signal [h]", "Durchschnittliche Dauer Nicht-Signal [h]"]] \
-            .plot(ax=ax[2], kind="bar", color=["Yellowgreen", "Purple"], stacked=False, legend=False) \
+            .plot(ax=ax[2], kind="bar", color=[ "#00FFFF", "#000000"], stacked=False, legend=False) \
             .set(ylabel="Stunden")
         for p in ax[2].patches:
-            ax[2].annotate("{:.0f}".format(p.get_height()), (p.get_x() + p.get_width() / 2., p.get_height()),
+            ax[2].annotate("{:.0f}".format(p.get_height()), (p.get_x() + p.get_width() / 2., p.get_height()+2),
                            ha='center',
-                           va='center', fontsize=17, color='black', xytext=(0, 4), textcoords='offset points')
+                           va='center', fontsize=12, color='black', xytext=(0, 4), textcoords='offset points')
         ax[2].yaxis.set_ticks(np.arange(0, 169, 24))
 
         ax[1].get_xaxis().set_visible(False)
@@ -383,22 +406,23 @@ class Scenario:
             ax[1].get_yaxis().set_visible(True)
             ax[2].get_xaxis().set_visible(True)
             ax[2].get_yaxis().set_visible(True)
-            ax[1].legend(["Freigabe", "Keine"])
-            ax[2].legend(["Freigabe", "Keine"])
-            ax[1].set_title("Freigabezeitraum")
-            ax[2].set_title("Mittlere Signallänge")
-
-
+            ax[1].legend(["Signal", "Kein Signal"])
+            ax[2].legend(["Signal", "Kein Signal"])
+            ax[1].set_title("Signalzeitraum [h]")
+            ax[2].set_title("Mittlere Signallänge [h]")
+            
         # if cut_ylim:
         #     plt.ylim(top=cut_ylim)
         # plt.grid(axis="x")
         return ax
 
-    def plot_heatmap(self, series, ax=None, **heatmap_args):
+    def plot_heatmap(self, series=None, ax=None, **heatmap_args):
         """wrapper for fpp.heatmap_ax for a given series"""
+        if series is None:
+            series = self.signal
         if ax is None:
-            fig, ax = plt.subplots(1, 1)
-        ax = fpp.heatmap_ax(series=series, ax=ax, **heatmap_args)
+            fig, ax = plt.subplots(1, 1, figsize=(12,1.5))
+        ax = fpp.heatmap_RG(series=series, ax=ax, **heatmap_args)
         return ax
 
     def plot_supplydemand(self, ax, hourly=False, daily=False, weekly=False, monthly=False, lang="de", **kwargs):
