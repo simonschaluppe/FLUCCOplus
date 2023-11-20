@@ -75,10 +75,11 @@ def plot_OIBCO2_comparison(rs, oib, years=[2015,2016,2017,2018,2019]):
         ax[i].set_xticks(np.linspace(0,54,7))
         ax[i].set_xlim(0,54)
         ax[i].set_ylim(50,400)
-        ax[i].set_xlabel(str(y), size=12)
+        ax[i].set_xlabel(str(y), size=16)
 
-    ax[0].set_ylabel('CO$_2$-Intensität [g/kWh$_e$$_l$]')
-    ax[0].legend(["Measurement data (EM)", "annual average (EM)", "2015-2018 average (EM)","OIB Rl6 Monthly (2018)","OIB RL6 2019"], loc='lower left', fontsize=12)
+    ax[0].set_ylabel('CO$_2$-Intensität $[g_{CO2eq}/kWh_{el}]$')
+    ax[0].legend(["Electricitymap", "Electricitymap STAB", 
+                  "2015-2018 average (EM)","OIB RL6 2018","OIB RL6 2019 (Monatlich)"], loc='lower left', fontsize=12)
     fig.tight_layout()
     return fig
 
@@ -127,16 +128,15 @@ def plot_HDW(df,
        # ax[i].xaxis.set_major_locator(months)
         #ax[i].xaxis.set_major_formatter(monthsFmt)
 
-def plot_annual_w_seasonal_detail(df: pd.DataFrame, fig=None, ax=None, week1=3, week2=30, legend=False, **pdplotargs):
+def plot_annual_w_seasonal_detail(df: pd.DataFrame, fig=None, ax=None, week1=3, week2=30, legend=True, **pdplotargs):
     """plots all columns of a dataframe hourly over the year, anda week in winter and summer,
     given a figure with 3 ax es"""
     if fig is None or ax is None:
         fig, ax = plt.subplots(1,3, figsize=(15,5), gridspec_kw={'width_ratios':[4,1,1]})
 
-    df.plot(ax=ax[0], legend=legend, **pdplotargs)
+    df.resample("D").mean().plot(ax=ax[0], legend=legend, **pdplotargs)
     df[df.index.isocalendar().week==week1].plot(ax=ax[1], legend=False, **pdplotargs)
     df[df.index.isocalendar().week==week2].plot(ax=ax[2], legend=False, **pdplotargs)
-
     return fig, ax
 
 
