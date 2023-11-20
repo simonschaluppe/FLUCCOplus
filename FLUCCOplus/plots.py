@@ -128,7 +128,7 @@ def plot_HDW(df,
        # ax[i].xaxis.set_major_locator(months)
         #ax[i].xaxis.set_major_formatter(monthsFmt)
 
-def plot_annual_w_seasonal_detail(df: pd.DataFrame, fig=None, ax=None, week1=3, week2=30, legend=True, **pdplotargs):
+def plot_annual_w_seasonal_detail(df: pd.DataFrame, fig=None, ax=None, week1=3, week2=30, legend=False, **pdplotargs):
     """plots all columns of a dataframe hourly over the year, anda week in winter and summer,
     given a figure with 3 ax es"""
     if fig is None or ax is None:
@@ -137,6 +137,7 @@ def plot_annual_w_seasonal_detail(df: pd.DataFrame, fig=None, ax=None, week1=3, 
     df.resample("D").mean().plot(ax=ax[0], legend=legend, **pdplotargs)
     df[df.index.isocalendar().week==week1].plot(ax=ax[1], legend=False, **pdplotargs)
     df[df.index.isocalendar().week==week2].plot(ax=ax[2], legend=False, **pdplotargs)
+
     return fig, ax
 
 
