@@ -140,8 +140,6 @@ def plot_annual_w_seasonal_detail(df: pd.DataFrame, fig=None, ax=None, week1=3, 
 
     return fig, ax
 
-
-
 def plot_comp(df, df2,
                  ylabel="Energie [kWh]",
                  xlabel="Zeit [Stunden]",

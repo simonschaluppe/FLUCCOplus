@@ -363,7 +363,7 @@ class Scenario:
         ax[0].set_ylabel("GW")
         return fig, ax
 
-    def plot_signal(self, ax=None, legend=True):
+    def plot_signal(self, ax=None, legend=True, labels=True, hmlabels=True):
         """plots heatmap, #of signal hours and average time
         for current signal in a row"""
         if ax is None:
@@ -376,6 +376,9 @@ class Scenario:
         cmap_name = 'custom_colormap'
         custom_cmap = LinearSegmentedColormap.from_list(cmap_name, colors, N=256)
         self.plot_heatmap(self.signal, ax=ax[0], cbar=False, cmap=custom_cmap)
+        if not hmlabels:
+            ax[0].get_xaxis().set_visible(False)
+        
         self.signal_props_summerwinter[["Zeitraum mit Signal [h]", "Nicht-Signal-Zeitraum [h]"]] \
             .plot(ax=ax[1], kind="bar", color=[ "#00FFFF", "#000000"],stacked=True, legend=False) \
             .set(ylabel="Stunden")
@@ -397,19 +400,22 @@ class Scenario:
                            va='center', fontsize=12, color='black', xytext=(0, 4), textcoords='offset points')
         ax[2].yaxis.set_ticks(np.arange(0, 169, 24))
 
-        ax[1].get_xaxis().set_visible(False)
-        ax[1].get_yaxis().set_visible(False)
-        ax[2].get_xaxis().set_visible(False)
-        ax[2].get_yaxis().set_visible(False)
+
         if legend:
-            ax[1].get_xaxis().set_visible(True)
-            ax[1].get_yaxis().set_visible(True)
-            ax[2].get_xaxis().set_visible(True)
-            ax[2].get_yaxis().set_visible(True)
             ax[1].legend(["Signal", "Kein Signal"])
             ax[2].legend(["Signal", "Kein Signal"])
             ax[1].set_title("Signalzeitraum [h]")
             ax[2].set_title("Mittlere Signallänge [h]")
+        ax[1].get_xaxis().set_visible(False)
+        ax[1].get_yaxis().set_visible(False)
+        ax[2].get_xaxis().set_visible(False)
+        ax[2].get_yaxis().set_visible(False)
+        if labels:
+            ax[1].get_xaxis().set_visible(True)
+            ax[1].get_yaxis().set_visible(True)
+            ax[2].get_xaxis().set_visible(True)
+            ax[2].get_yaxis().set_visible(True)
+        
             
         # if cut_ylim:
         #     plt.ylim(top=cut_ylim)

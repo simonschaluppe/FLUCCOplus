@@ -62,7 +62,7 @@ def logg(f):
 
 
 
-def plot_signal_bars(df, columns, ytick_average_max=False, cut_ylim=False, figsize=True):
+def plot_signal_bars(df, columns, ytick_average_max=False, cut_ylim=False, figsize=(12,6)):
     """takes a df series, with -1 and +1 denoting OFF and ON signals"""
     desc_wind = pd.DataFrame()
     df_step_wind = pd.DataFrame()
