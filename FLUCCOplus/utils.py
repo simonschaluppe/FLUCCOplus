@@ -60,13 +60,18 @@ def logg(f):
         return result
     return wrapper
 
+def set_datetime_index(df, year=2018):
+    dates = np.arange(f"{year}-01-01", f"{year+1}-01-01 00:00", dtype="datetime64[h]")
+    df.index = dates
+    return df
 
-
-def plot_signal_bars(df, columns, ytick_average_max=False, cut_ylim=False, figsize=(12,6)):
+def plot_signal_bars(df, columns=None, ytick_average_max=False, cut_ylim=False, figsize=(12,6)):
     """takes a df series, with -1 and +1 denoting OFF and ON signals"""
     desc_wind = pd.DataFrame()
     df_step_wind = pd.DataFrame()
     df_not_wind = pd.DataFrame()
+    
+    columns = columns or df.columns
 
     # fig, ax = plt.subplots()
     for c in columns:
@@ -172,9 +177,14 @@ def Ueberschuesse_WINDfirst(df2):
     return df2
 
 def maxnutz():
-    import FLUCCOplus.config as config
     from pathlib import Path
-    df_nutz = pd.DataFrame()
+    output_file = config.DATA_PROCESSED / Path("MANutz/maxnutz_normalized.csv")
+    
+    # Check if the output file already exists
+    if output_file.exists():
+        # Load the existing file directly into a DataFrame and return it
+        return pd.read_csv(output_file, sep=";", decimal=",")
+    
     df_nutz["Schaltsignal_REF"] = pd.read_csv(config.DATA_PROCESSED / Path("MANutz/Schaltsignal_REF.csv")).iloc[:, 1]
     df_nutz["Schaltsignal_REG"] = pd.read_csv(config.DATA_PROCESSED / Path("MANutz/Schaltsignal_REG.csv")).iloc[:, 1]
     df_nutz["Schaltsignal_UBA30"] = pd.read_csv(config.DATA_PROCESSED / Path("MANutz/Schaltsignal_uba30.csv")).iloc[:,
@@ -187,7 +197,8 @@ def maxnutz():
                                      :, 1]
     df_nutz = df_nutz.replace(1, -1)
     df_nutz = df_nutz.replace(0, 1).replace(-1, 0)
-    return df_nutz.to_csv("../data/processed/MANutz/maxnutz_normalized.csv", sep=";", decimal=",")
+    df_nutz.to_csv(output_file, sep=";", decimal=",")
+    return df_nutz
 
 if __name__ == "__main__":
     @log

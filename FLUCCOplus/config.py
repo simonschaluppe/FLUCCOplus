@@ -13,14 +13,18 @@ logging.basicConfig(
     level     = logging.DEBUG,   # Output level
 )
 
+MODULE_DIR = Path(__file__).parent.parent.resolve()
+DATA_PATH = MODULE_DIR / Path("data")
+
+DATA_RAW = DATA_PATH / "raw"
+DATA_EXTERNAL = DATA_PATH / "external"
+DATA_INTERIM = DATA_PATH / "interim"
+DATA_PROCESSED = DATA_PATH / "processed"
+
+PLOTS = DATA_PATH / "Plots"
 
 
-DATA_RAW = Path("../data/raw")
-DATA_EXTERNAL = Path("../data/external")
-DATA_INTERIM = Path("../data/interim")
-DATA_PROCESSED = Path("../data/processed")
 
-PLOTS = Path("../data/Plots")
 
 SAVE_CSV_FORMAT = {
     "sep": ";",
