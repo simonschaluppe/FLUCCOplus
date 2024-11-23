@@ -68,10 +68,14 @@ carbon_intensities = [
     'carbon_intensity_discharge_avg',
     'carbon_intensity_import_avg']
 carbon_rate = ['carbon_rate_avg']
-carbon_origins = ['carbon_origin_percent_biomass_avg', 'carbon_origin_percent_coal_avg',
-                  'carbon_origin_percent_gas_avg', 'carbon_origin_percent_hydro_avg',
-                  'carbon_origin_percent_nuclear_avg', 'carbon_origin_percent_oil_avg',
-                  'carbon_origin_percent_solar_avg', 'carbon_origin_percent_wind_avg',
+carbon_origins = ['carbon_origin_percent_biomass_avg', 
+                  'carbon_origin_percent_coal_avg',
+                  'carbon_origin_percent_gas_avg', 
+                  'carbon_origin_percent_hydro_avg',
+                  'carbon_origin_percent_nuclear_avg', 
+                  'carbon_origin_percent_oil_avg',
+                  'carbon_origin_percent_solar_avg', 
+                  'carbon_origin_percent_wind_avg',
                   'carbon_origin_percent_geothermal_avg',
                   'carbon_origin_percent_unknown_avg',
                   'carbon_origin_percent_battery_discharge_avg',
@@ -150,11 +154,11 @@ carrier_colors = {
     "solar": "yellow",
     "wind": "xkcd:azure",
     "geothermal": "brown",
-    "coal": "darkgray",
+    "coal": "#333333",
     "gas": "xkcd:navy",
     "nuclear": "magenta",
     "oil": "black",
-    "unknown": "gray",
+    "unknown": "red",
     "battery_discharge": "orange",
     "hydro_discharge": "blue"}
 

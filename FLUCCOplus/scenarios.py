@@ -12,7 +12,7 @@ from FLUCCOplus.utils import *
 from enum import Enum
 
 class Names:
-    electricity_map_2020 = "EM2018"
+    electricity_map_2018 = "EM2018"
     electricity_map_2019 = "EM2019"
     econtrol_2019 = "E-Control 2019"
     veigl17_2030 = "Energie und Klimazukunft 2030 (Veigl17)"

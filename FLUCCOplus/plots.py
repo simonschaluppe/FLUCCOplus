@@ -100,7 +100,7 @@ def plot_HDW(df,
     df_daily = df.resample("D").mean()
     df_weekly = df.resample("W").mean()
     # df_monthly = df.resample("M").mean()
-    if fig == None or ax == None:
+    if fig == None and ax == None:
         fig, ax = plt.subplots(1, 1, figsize=figsize)
 
     df[var].plot(ax=ax, color=colors[0], marker='.', alpha=0.3, linestyle='None', legend=False)
