@@ -15,9 +15,41 @@ RESLOAD18_PATH = config.DATA_INTERIM / Path("Residuallast.csv")
 RESLOAD19_PATH = config.DATA_INTERIM / Path("RES0-40-55.csv")
 
 def load_peexcel():
+    """
+Returns a Dataframe with the following *normalized* signals: 
+ 0   Wind 2013                            8760 non-null   float64
+ 1   Wind 2015                            8760 non-null   float64
+ 2   Wind 2016                            8760 non-null   float64
+ 3   Wind 2030, TU EEG, "Stromzukunft"    8760 non-null   float64
+ 4   WEB 2015 Umgebung Wien               8760 non-null   float64
+ 5   Hochrechnung Ueberschuss 2050        8760 non-null   float64
+ 6   Wind AT 2017                         8760 non-null   float64
+ 7   Wind AT 2018                         8760 non-null   float64
+ 8   Wind AT 2019                         8760 non-null   float64
+ 9   Wind AT 2020                         8760 non-null   float64
+ 10  REF                                  8760 non-null   float64
+ 11  REG                                  8760 non-null   float64
+ 12  uba30                                8760 non-null   float64
+ 13  uba50                                8760 non-null   float64
+ 14  veigl30                              8760 non-null   float64
+ 15  veigl50                              8760 non-null   float64
+ 16  1.5WP-3K-PV/Battery-CO2              8760 non-null   float64
+ 17  1.3WP-3K-PV/Battery-CO2              8760 non-null   float64
+ 18  1.3WP-3K-keine PV/Battery-CO2/Preis  8760 non-null   float64
+ 19  1.3WP-3K-PV/Battery-CO2/Preis        8760 non-null   float64
+ 20  1.3WP-3K-PV/Battery-Preis            8760 non-null   float64"""
     return pd.read_csv(PEEXCEL_PATH, index_col=0, parse_dates=True)
 
 def load_web(year=None):
+    """
+Returns a Dataframe with the following *normalized* signals: 
+21  Neuhof I                             8760 non-null   float64
+22  Neuhof III                           8760 non-null   float64
+23  Maustrenk                            8760 non-null   float64
+24  STERN I                              8760 non-null   float64
+25  STERN II                             8760 non-null   float64
+26  STERN III                            8760 non-null   float64
+    """
     df = web.read(WEB_PATH, decimal=",")
     if year:
         df = df[df.index.year==year]
